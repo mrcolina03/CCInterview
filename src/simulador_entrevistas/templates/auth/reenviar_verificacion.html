@@ -1,0 +1,8 @@
+<h2>Tu cuenta no está verificada</h2>
+<p>Haz clic en el botón para reenviar el correo de verificación a <strong>{{ email }}</strong>.</p>
+
+<form method="post" action="/auth/enviar-verificacion">
+    <input type="hidden" name="email" value="{{ email }}">
+    <button type="submit">📩 Reenviar verificación</button>
+</form>
+    

@@ -1,0 +1,85 @@
+<!-- templates/pregunta/probar.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Evaluación de nuevas habilidades</title>
+</head>
+<body>
+    <h1>Evaluación de creación de nuevas habilidades y subtemáticas</h1>
+
+    <h2>¿Crear nueva habilidad técnica?: <strong>{{ 'Sí' if crear_tecnica else 'No' }}</strong></h2>
+    <h2>¿Crear nueva habilidad blanda?: <strong>{{ 'Sí' if crear_blanda else 'No' }}</strong></h2>
+
+    <hr>
+
+    <h2>Detalles de criterios (habilidades)</h2>
+    <ul>
+        {% for clave, datos in criterios.habilidades.items() %}
+            <li>
+                {{ clave }} —
+                Valor: {{ datos.valor }},
+                Porcentaje requerido: {{ datos.porcentaje * 100 }}%,
+                Activo: {{ 'Sí' if datos.activo else 'No' }}
+            </li>
+        {% endfor %}
+    </ul>
+
+    <h2>Detalles de criterios (subtemáticas)</h2>
+    <ul>
+        {% for clave, datos in criterios.subtematicas.items() %}
+            <li>
+                {{ clave }} —
+                Valor: {{ datos.valor }},
+                Porcentaje requerido: {{ datos.porcentaje * 100 }}%,
+                Activo: {{ 'Sí' if datos.activo else 'No' }}
+            </li>
+        {% endfor %}
+    </ul>
+
+    <hr>
+
+    <h3>Subtemáticas técnicas que deben expandirse:</h3>
+    <ul>
+        {% for habilidad, crear in nuevas_subs_tecnicas.items() %}
+            <li>{{ habilidad }}: {{ 'Sí' if crear else 'No' }}</li>
+        {% endfor %}
+    </ul>
+
+    <h3>Subtemáticas blandas que deben expandirse:</h3>
+    <ul>
+        {% for habilidad, crear in nuevas_subs_blandas.items() %}
+            <li>{{ habilidad }}: {{ 'Sí' if crear else 'No' }}</li>
+        {% endfor %}
+    </ul>
+
+    <hr>
+<h3>Nueva habilidad técnica generada:</h3>
+{% if habilidad_tecnica_generada %}
+    <p><strong>{{ habilidad_tecnica_generada.habilidad }}</strong></p>
+{% else %}
+    <p>No se generó nueva habilidad técnica.</p>
+{% endif %}
+
+<h3>Nueva habilidad blanda generada:</h3>
+{% if habilidad_blanda_generada %}
+    <p><strong>{{ habilidad_blanda_generada.habilidad }}</strong></p>
+{% else %}
+    <p>No se generó nueva habilidad blanda.</p>
+{% endif %}
+
+<h3>Subtemáticas técnicas nuevas generadas:</h3>
+<ul>
+    {% for habilidad, sub in subtematicas_generadas.tecnica.items() %}
+        <li><strong>{{ habilidad }}</strong>: {{ sub }}</li>
+    {% endfor %}
+</ul>
+
+<h3>Subtemáticas blandas nuevas generadas:</h3>
+<ul>
+    {% for habilidad, sub in subtematicas_generadas.blanda.items() %}
+        <li><strong>{{ habilidad }}</strong>: {{ sub }}</li>
+    {% endfor %}
+</ul>
+
+</body>
+</html>

@@ -1,0 +1,200 @@
+{% block content %}
+{% if terminada %}
+<h2>✅ Entrevista finalizada</h2>
+<a href="/">Volver al inicio</a>
+{% else %}
+<h2>Pregunta</h2>
+<div class="card">
+  <p><strong>{{ pregunta.tipo|capitalize }}:</strong> {{ pregunta.pregunta }}</p>
+</div>
+
+<form method="post" action="/entrevista/responder/{{ entrevista_id }}">
+  <input type="hidden" name="pregunta_id" value="{{ pregunta._id }}">
+
+  {% if pregunta.tipo == "codigo" %}
+  <label for="lenguaje">Lenguaje:</label>
+  <select id="lenguaje" name="lenguaje" required>
+    {% for lang in plantillas %}
+    <option value="{{ lang }}">{{ lang|capitalize }}</option>
+    {% endfor %}
+  </select> 
+
+  <div id="editor" style="height: 300px; border: 1px solid #ccc;"></div>
+  <textarea id="respuesta" name="respuesta" style="display:none;"></textarea>
+
+  <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.34.1/min/vs/loader.js"></script>
+  <script>
+  const plantillas = {{ plantillas_json | safe }};
+  require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.34.1/min/vs' } });
+  require(['vs/editor/editor.main'], function () {
+    const selector = document.getElementById('lenguaje');
+    const langActual = selector.value;
+    const contenidoInicial = plantillas[langActual] || '';
+
+    window.editor = monaco.editor.create(document.getElementById('editor'), {
+      value: contenidoInicial,
+      language: langActual,
+      theme: 'vs-dark'
+    });
+
+    document.querySelector('form').addEventListener('submit', function () {
+      document.getElementById('respuesta').value = window.editor.getValue();
+    });
+
+    selector.addEventListener('change', function () {
+      const nuevoLenguaje = this.value;
+      const nuevaPlantilla = plantillas[nuevoLenguaje] || '';
+      monaco.editor.setModelLanguage(window.editor.getModel(), nuevoLenguaje);
+      window.editor.setValue(nuevaPlantilla);
+    });
+  });
+</script>
+
+  {% else %}
+
+
+  <label for="respuesta">Tu respuesta:</label><br><br><br><br>
+  <button type="button" id="leer">🔊 Escuchar pregunta</button>
+  <button type="button" id="iniciar">🎙️ Iniciar grabación</button>
+  <button type="button" id="detener" style="display:none;">⏹️ Detener grabación</button>
+
+  <audio id="preview" controls></audio>
+  <input type="hidden" name="audio_data" id="audio_data">
+
+  <script>
+    const textoPregunta = "{{ pregunta.pregunta }}";
+    const synth = window.speechSynthesis;
+
+    function hablarPregunta() {
+      const utterance = new SpeechSynthesisUtterance(textoPregunta);
+      utterance.lang = "es-ES";
+      const voces = synth.getVoices();
+      const vozEsp = voces.find(v => v.lang.startsWith("es"));
+      if (vozEsp) utterance.voice = vozEsp;
+      synth.cancel();
+      synth.speak(utterance);
+    }
+
+    if (synth.getVoices().length === 0) {
+      synth.onvoiceschanged = hablarPregunta;
+    } else {
+      hablarPregunta();
+    }
+
+    document.getElementById("leer").addEventListener("click", hablarPregunta);
+
+    let mediaRecorder;
+    let audioChunks = [];
+    let audioContext;
+    let recordingStream;
+
+    const btnIniciar = document.getElementById("iniciar");
+    const btnDetener = document.getElementById("detener");
+    const preview = document.getElementById("preview");
+    const audioDataInput = document.getElementById("audio_data");
+
+    function encodeWAV(samples, sampleRate) {
+      const buffer = new ArrayBuffer(44 + samples.length * 2);
+      const view = new DataView(buffer);
+      const writeString = (offset, string) => {
+        for (let i = 0; i < string.length; i++) {
+          view.setUint8(offset + i, string.charCodeAt(i));
+        }
+      };
+      writeString(0, 'RIFF');
+      view.setUint32(4, 36 + samples.length * 2, true);
+      writeString(8, 'WAVE');
+      writeString(12, 'fmt ');
+      view.setUint32(16, 16, true);
+      view.setUint16(20, 1, true);
+      view.setUint16(22, 1, true);
+      view.setUint32(24, sampleRate, true);
+      view.setUint32(28, sampleRate * 2, true);
+      view.setUint16(32, 2, true);
+      view.setUint16(34, 16, true);
+      writeString(36, 'data');
+      view.setUint32(40, samples.length * 2, true);
+
+      let offset = 44;
+      for (let i = 0; i < samples.length; i++, offset += 2) {
+        const s = Math.max(-1, Math.min(1, samples[i]));
+        view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+      }
+
+      return buffer;
+    }
+
+    btnIniciar.onclick = async () => {
+      audioChunks = [];
+      try {
+        recordingStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 44100 });
+        const source = audioContext.createMediaStreamSource(recordingStream);
+        const processor = audioContext.createScriptProcessor(4096, 1, 1);
+        const recordedSamples = [];
+
+        processor.onaudioprocess = (e) => {
+          const inputData = e.inputBuffer.getChannelData(0);
+          recordedSamples.push(new Float32Array(inputData));
+        };
+
+        source.connect(processor);
+        processor.connect(audioContext.destination);
+
+        mediaRecorder = new MediaRecorder(recordingStream);
+        mediaRecorder.ondataavailable = e => {
+          if (e.data.size > 0) {
+            audioChunks.push(e.data);
+          }
+        };
+
+        mediaRecorder.onstop = async () => {
+          processor.disconnect();
+          source.disconnect();
+          if (audioContext.state !== 'closed') await audioContext.close();
+          recordingStream.getTracks().forEach(track => track.stop());
+
+          const totalLength = recordedSamples.reduce((acc, chunk) => acc + chunk.length, 0);
+          const combinedSamples = new Float32Array(totalLength);
+          let offset = 0;
+          recordedSamples.forEach(chunk => {
+            combinedSamples.set(chunk, offset);
+            offset += chunk.length;
+          });
+
+          const wavBuffer = encodeWAV(combinedSamples, 44100);
+          const finalBlob = new Blob([wavBuffer], { type: 'audio/wav' });
+          const audioUrl = URL.createObjectURL(finalBlob);
+          preview.src = audioUrl;
+
+          const reader = new FileReader();
+          reader.readAsDataURL(finalBlob);
+          reader.onloadend = () => {
+            audioDataInput.value = reader.result;
+          };
+        };
+
+        mediaRecorder.start();
+        btnIniciar.style.display = "none";
+        btnDetener.style.display = "inline-block";
+      } catch (err) {
+        console.error('Error detallado:', err);
+        alert("Error al acceder al micrófono: " + err.message);
+      }
+    };
+
+    btnDetener.onclick = () => {
+      if (mediaRecorder && mediaRecorder.state === "recording") {
+        mediaRecorder.stop();
+        btnDetener.style.display = "none";
+        btnIniciar.style.display = "inline-block";
+      }
+    };
+  </script>
+  {% endif %}
+
+  <br><br>
+  <button type="submit">Enviar respuesta</button>
+</form>
+{% endif %}
+{% endblock %}

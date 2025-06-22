@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Escoger habilidades y subtemáticas</title>
+</head>
+<body>
+    <h1>Selección de habilidades y subtemáticas</h1>
+
+    <form method="post" action="/adaptabilidad/escoger">
+        <label for="cantidad">Cantidad:</label>
+        <input type="number" name="cantidad" min="1" value="1" required><br><br>
+
+        <label for="tipo">Tipo:</label>
+        <select name="tipo">
+            <option value="tecnica">Técnica</option>
+            <option value="blanda">Blanda</option>
+        </select><br><br>
+
+        <button type="submit">Seleccionar</button>
+    </form>
+
+    {% if seleccionadas %}
+        <h2>Resultados:</h2>
+        <ul>
+            {% for item in seleccionadas %}
+                <li><strong>{{ item.habilidad }}</strong> → {{ item.subtematica }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+</body>
+</html>

@@ -1,0 +1,14 @@
+<h2>Login</h2>
+<form method="post" action="/auth/login">
+    <input name="email" type="email" placeholder="Correo electrónico"><br>
+    <input name="password" type="password" placeholder="Contraseña"><br>
+    <button type="submit">Iniciar sesión</button>
+</form>
+
+<p>¿No tienes cuenta? <a href="/auth/register">Regístrate aquí</a></p>
+
+{% if error %}
+    <p style="color: red;">{{ error }}</p>
+{% endif %}
+
+<p>¿Olvidaste tu contraseña? <a href="/auth/recuperar">Recuperar contraseña</a></p>

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Inicio | Simulador de Entrevistas</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 50px auto;
+            max-width: 600px;
+            text-align: center;
+        }
+        h1 {
+            margin-bottom: 30px;
+        }
+        a {
+            display: block;
+            margin: 15px 0;
+            font-size: 18px;
+            color: #0066cc;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        {% if user %}
+            <div><strong>Usuario:</strong> {{ user.email }}</div>
+            <a href="/logout">Cerrar sesión</a>
+        {% else %}
+            <div>No has iniciado sesión</div>
+        {% endif %}
+    </div>
+
+    <h1>Bienvenido al Simulador de Entrevistas</h1>
+    <a href="/auth/register">Registrarse</a>
+    <a href="/auth/login">Iniciar sesión</a>
+    <a href="/cv/create">Llenar formulario de CV</a>
+    <a href="/cv/index">Mi CV</a>
+    <a href="/entrevista/nueva">Nueva Entrevista</a>
+    <a href="/config/duracion">Configuración Duración</a>
+    <a href="/adaptabilidad/probar">Probar Creación de Habilidad</a>
+    <a href="/adaptabilidad/escoger">Escoger Habilidades/Subtemáticas</a>
+    <a href="/adaptabilidad/codigo">Probar identificación lenguajes compatibles</a>
+</body>
+</html>

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Formulario de CV para Desarrollador</title>
+    <style>
+        label { font-weight: bold; }
+        .section { margin-bottom: 20px; padding: 10px; border: 1px solid #ccc; }
+    </style>
+    <script>
+        function addSection(sectionId, templateId) {
+            const container = document.getElementById(sectionId);
+            const template = document.getElementById(templateId);
+            const clone = template.content.cloneNode(true);
+            container.appendChild(clone);
+        }
+    </script>
+</head>
+<body>
+    <h1>Formulario de CV</h1>
+    <form action="/cv/submit" method="post">
+
+        <div class="section">
+            <label>Nombre completo:</label><br>
+            <input type="text" name="nombre" required><br>
+        </div>
+
+        <!-- EXPERIENCIA -->
+        <div class="section">
+            <label>Experiencia profesional:</label>
+            <div id="experienciaContainer"></div>
+            <button type="button" onclick="addSection('experienciaContainer', 'experienciaTemplate')">+ Añadir experiencia</button>
+        </div>
+
+        <template id="experienciaTemplate">
+            <div class="section">
+                <input type="text" name="exp_puesto" placeholder="Puesto" required><br>
+                <input type="text" name="exp_empresa" placeholder="Empresa" required><br>
+                <input type="text" name="exp_duracion" placeholder="Duración (ej: Ene 2020 - Dic 2022)" required><br>
+                <textarea name="exp_descripcion" placeholder="Descripción de responsabilidades y logros" required></textarea><br>
+            </div>
+        </template>
+
+        <!-- CERTIFICACIONES -->
+        <div class="section">
+            <label>Certificaciones:</label>
+            <div id="certificacionesContainer"></div>
+            <button type="button" onclick="addSection('certificacionesContainer', 'certificacionTemplate')">+ Añadir certificación</button>
+        </div>
+
+        <template id="certificacionTemplate">
+            <div class="section">
+                <input type="text" name="cert_nombre" placeholder="Nombre de certificación"><br>
+                <input type="text" name="cert_emisor" placeholder="Emitido por"><br>
+            </div>
+        </template>
+
+        <!-- IDIOMAS -->
+        <div class="section">
+            <label>Idiomas:</label>
+            <div id="idiomasContainer"></div>
+            <button type="button" onclick="addSection('idiomasContainer', 'idiomaTemplate')">+ Añadir idioma</button>
+        </div>
+
+        <template id="idiomaTemplate">
+            <div class="section">
+                <input type="text" name="idioma_nombre" placeholder="Idioma"><br>
+                <input type="text" name="idioma_nivel" placeholder="Nivel (ej: Intermedio, Avanzado, Nativo)">
+            </div>
+        </template>
+
+        <!-- HABILIDADES TÉCNICAS -->
+        <div class="section">
+            <label>Habilidades técnicas:</label><br>
+            <input type="text" name="lenguajes" placeholder="Lenguajes de programación (ej: Python, JavaScript)" required><br>
+            <input type="text" name="frameworks" placeholder="Frameworks (ej: React, Django)"><br>
+            <input type="text" name="bases_datos" placeholder="Bases de datos (ej: PostgreSQL, MongoDB)"><br>
+            <input type="text" name="herramientas" placeholder="Herramientas (ej: Git, Docker, VSCode)">
+        </div>
+
+        <!-- ESTUDIOS -->
+        <div class="section">
+            <label>Estudios:</label>
+            <div id="estudiosContainer"></div>
+            <button type="button" onclick="addSection('estudiosContainer', 'estudioTemplate')">+ Añadir estudio</button>
+        </div>
+
+        <template id="estudioTemplate">
+            <div class="section">
+                <input type="text" name="estudio_institucion" placeholder="Institución" required><br>
+                <input type="text" name="estudio_titulo" placeholder="Título obtenido" required><br>
+                <input type="text" name="estudio_anios" placeholder="Años (ej: 2018 - 2022)" required><br>
+            </div>
+        </template>
+
+        <input type="submit" value="Enviar">
+    </form>
+</body>
+</html>

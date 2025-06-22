@@ -1,0 +1,14 @@
+
+{% block content %}
+  <h2>Lenguajes detectados compatibles con Judge0</h2>
+
+  {% if lenguajes %}
+    <ul>
+      {% for lenguaje in lenguajes %}
+        <li>{{ lenguaje }}</li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No se han detectado lenguajes compatibles aún.</p>
+  {% endif %}
+{% endblock %}

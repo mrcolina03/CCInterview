@@ -1,0 +1,10 @@
+<h2>Revisa tu correo 📬</h2>
+<p>Te hemos enviado un enlace para verificar tu cuenta a {{ email }}.</p>
+<p>Revisa tu bandeja de entrada o spam.</p>
+
+
+<p>¿No recibiste el correo? Puedes volver a intentarlo:</p>
+<form method="post" action="/auth/enviar-verificacion">
+    <input type="hidden" name="email" value="{{ email }}">
+    <button type="submit">Reenviar correo de verificación</button>
+</form>

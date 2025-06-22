@@ -1,0 +1,43 @@
+{% block content %}
+<h1 class="text-2xl font-bold mb-4">Resultados de la Entrevista</h1>
+
+{% for pregunta in preguntas %}
+  <div class="mb-6 border rounded-lg p-4 bg-white shadow">
+    <h2 class="text-xl font-semibold mb-2">Pregunta {{ loop.index }}:</h2>
+    <p class="mb-2"><strong>Tipo:</strong> {{ pregunta.tipo|capitalize }}</p>
+    <p class="mb-2"><strong>Pregunta:</strong> {{ pregunta.pregunta }}</p>
+
+    {% set respuesta = respuestas | selectattr("pregunta_id", "equalto", pregunta._id) | first %}
+
+    {% if respuesta %}
+      <div class="mt-4">
+        <p><strong>Tu respuesta:</strong></p>
+        <pre class="bg-gray-100 p-2 overflow-auto text-sm">{{ respuesta.respuesta }}</pre>
+
+        {% if respuesta.salida %}
+          <p class="mt-2"><strong>Salida:</strong> {{ respuesta.salida }}</p>
+        {% endif %}
+
+        {% if respuesta.error %}
+          <p class="mt-2 text-red-600"><strong>Error:</strong> {{ respuesta.error }}</p>
+        {% endif %}
+
+        {% if respuesta.feedback %}
+          <div class="mt-4 bg-blue-50 p-3 rounded">
+            <p class="font-semibold text-blue-800">Evaluación de la IA:</p>
+            <p><strong>Puntuación:</strong> {{ respuesta.feedback.puntuacion }}/10</p>
+            <p><strong>Justificación:</strong> {{ respuesta.feedback.justificacion }}</p>
+            <p><strong>Recomendaciones:</strong> {{ respuesta.feedback.recomendaciones }}</p>
+          </div>
+        {% else %}
+          <p class="italic text-gray-500">Evaluación pendiente...</p>
+        {% endif %}
+      </div>
+    {% else %}
+      <p class="text-red-600">No se encontró una respuesta para esta pregunta.</p>
+    {% endif %}
+  </div>
+{% endfor %}
+
+<a href="/" class="inline-block mt-6 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Volver al inicio</a>
+{% endblock %}

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Perfil del Usuario</title>
+</head>
+<body>
+    <h1>CV de {{ cv.nombre }}</h1>
+
+    <h2>Habilidades Técnicas</h2>
+    <ul>
+        <li>Lenguajes: {{ cv.habilidades_tecnicas.lenguajes }}</li>
+        <li>Frameworks: {{ cv.habilidades_tecnicas.frameworks }}</li>
+        <li>Bases de Datos: {{ cv.habilidades_tecnicas.bases_datos }}</li>
+        <li>Herramientas: {{ cv.habilidades_tecnicas.herramientas }}</li>
+    </ul>
+
+    <h2>Experiencia Profesional</h2>
+    {% for exp in cv.experiencia %}
+        <p><strong>{{ exp.puesto }}</strong> en {{ exp.empresa }} ({{ exp.duracion }})</p>
+        <p>{{ exp.descripcion }}</p>
+    {% endfor %}
+
+    <h2>Certificaciones</h2>
+    {% for cert in cv.certificaciones %}
+        <p>{{ cert.nombre }} - {{ cert.emisor }}</p>
+    {% endfor %}
+
+    <h2>Idiomas</h2>
+    {% for idioma in cv.idiomas %}
+        <p>{{ idioma.nombre }} ({{ idioma.nivel }})</p>
+    {% endfor %}
+
+    <h2>Educación</h2>
+    <ul>
+        {% for edu in cv.estudios %}
+            <li>Institución: {{ edu.institucion }}</li>
+            <li>Título: {{ edu.titulo }}</li>
+            <li>Años: {{ edu.anios }}</li>
+            <br>
+        {% endfor %}
+    </ul>
+</body>
+</html>

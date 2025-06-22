@@ -1,0 +1,23 @@
+{% block content %}
+<h2>Crear nueva entrevista</h2>
+<form method="post" action="/entrevista/nueva" class="form">
+  <label for="duracion">Duración de la entrevista:</label>
+  <select name="duracion" id="duracion" required>
+    {% for clave, valores in config.items() if clave != "_id" %}
+      <option value="{{ clave }}">
+        Entrevista {{ clave }} ({{ valores.minutos }} min)
+      </option>
+    {% endfor %}
+  </select>
+
+  <label for="modo">Modo de entrevista:</label>
+  <select name="modo" id="modo" required>
+    <option value="mixto">Mixto (técnica y blanda)</option>
+    <option value="solo tecnica">Solo técnica</option>
+    <option value="solo blanda">Solo blanda</option>
+    <option value="codigo">Código</option>
+  </select>
+
+  <button type="submit">Comenzar entrevista</button>
+</form>
+{% endblock %}
