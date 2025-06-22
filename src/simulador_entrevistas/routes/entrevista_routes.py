@@ -199,13 +199,8 @@ async def responder_pregunta_general(
             print(f"Error procesando audio: {e}")
             analisis_audio = {"error": str(e)}
 
-        pregunta_doc = await db["preguntas"].find_one({"_id": ObjectId(pregunta_id)})
-        texto_pregunta = pregunta_doc.get("pregunta", "") if pregunta_doc else ""
-        calificacion = await evaluar_respuesta_llm(texto_pregunta, texto_transcrito)
-
         doc_respuesta.update({
             "respuesta_texto": texto_transcrito,
-            "calificacion_openai": calificacion,
             "analisis_audio": analisis_audio
         })
 
