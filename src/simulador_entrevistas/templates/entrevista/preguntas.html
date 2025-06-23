@@ -49,6 +49,7 @@
     });
   });
 </script>
+<button type="submit">Enviar respuesta</button>
 
   {% else %}
 
@@ -57,6 +58,7 @@
   <button type="button" id="leer">🔊 Escuchar pregunta</button>
   <button type="button" id="iniciar">🎙️ Iniciar grabación</button>
   <button type="button" id="detener" style="display:none;">⏹️ Detener grabación</button>
+  <button type="submit" id="enviar" disabled>Enviar respuesta</button>
 
   <audio id="preview" controls></audio>
   <input type="hidden" name="audio_data" id="audio_data">
@@ -172,6 +174,7 @@
           reader.onloadend = () => {
             audioDataInput.value = reader.result;
           };
+          document.getElementById("enviar").disabled = false;
         };
 
         mediaRecorder.start();
@@ -194,7 +197,7 @@
   {% endif %}
 
   <br><br>
-  <button type="submit">Enviar respuesta</button>
+  
 </form>
 {% endif %}
 {% endblock %}
