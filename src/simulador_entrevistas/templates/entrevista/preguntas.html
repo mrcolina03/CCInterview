@@ -63,24 +63,44 @@
   <audio id="preview" controls></audio>
   <input type="hidden" name="audio_data" id="audio_data">
 
-  <script>
+ <script>
     const textoPregunta = "{{ pregunta.pregunta }}";
     const synth = window.speechSynthesis;
 
+    // Función para limpiar el texto antes de la síntesis de voz
+    function limpiarTextoParaVoz(texto) {
+        return texto
+            // Eliminar comillas simples y dobles
+            .replace(/['"''""]/g, '')
+            // Eliminar caracteres especiales problemáticos
+            .replace(/[#@$%&*]/g, '')
+            // Reemplazar guiones por espacios para mejor pronunciación
+            .replace(/[-_]/g, ' ')
+            // Limpiar espacios múltiples
+            .replace(/\s+/g, ' ')
+            // Eliminar espacios al inicio y final
+            .trim();
+    }
+
     function hablarPregunta() {
-      const utterance = new SpeechSynthesisUtterance(textoPregunta);
-      utterance.lang = "es-ES";
-      const voces = synth.getVoices();
-      const vozEsp = voces.find(v => v.lang.startsWith("es"));
-      if (vozEsp) utterance.voice = vozEsp;
-      synth.cancel();
-      synth.speak(utterance);
+        // Limpiar el texto antes de crear la utterance
+        const textoLimpio = limpiarTextoParaVoz(textoPregunta);
+        
+        const utterance = new SpeechSynthesisUtterance(textoLimpio);
+        utterance.lang = "es-ES";
+        
+        const voces = synth.getVoices();
+        const vozEsp = voces.find(v => v.lang.startsWith("es"));
+        if (vozEsp) utterance.voice = vozEsp;
+        
+        synth.cancel();
+        synth.speak(utterance);
     }
 
     if (synth.getVoices().length === 0) {
-      synth.onvoiceschanged = hablarPregunta;
+        synth.onvoiceschanged = hablarPregunta;
     } else {
-      hablarPregunta();
+        hablarPregunta();
     }
 
     document.getElementById("leer").addEventListener("click", hablarPregunta);
@@ -96,104 +116,104 @@
     const audioDataInput = document.getElementById("audio_data");
 
     function encodeWAV(samples, sampleRate) {
-      const buffer = new ArrayBuffer(44 + samples.length * 2);
-      const view = new DataView(buffer);
-      const writeString = (offset, string) => {
-        for (let i = 0; i < string.length; i++) {
-          view.setUint8(offset + i, string.charCodeAt(i));
+        const buffer = new ArrayBuffer(44 + samples.length * 2);
+        const view = new DataView(buffer);
+        const writeString = (offset, string) => {
+            for (let i = 0; i < string.length; i++) {
+                view.setUint8(offset + i, string.charCodeAt(i));
+            }
+        };
+        writeString(0, 'RIFF');
+        view.setUint32(4, 36 + samples.length * 2, true);
+        writeString(8, 'WAVE');
+        writeString(12, 'fmt ');
+        view.setUint32(16, 16, true);
+        view.setUint16(20, 1, true);
+        view.setUint16(22, 1, true);
+        view.setUint32(24, sampleRate, true);
+        view.setUint32(28, sampleRate * 2, true);
+        view.setUint16(32, 2, true);
+        view.setUint16(34, 16, true);
+        writeString(36, 'data');
+        view.setUint32(40, samples.length * 2, true);
+
+        let offset = 44;
+        for (let i = 0; i < samples.length; i++, offset += 2) {
+            const s = Math.max(-1, Math.min(1, samples[i]));
+            view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
         }
-      };
-      writeString(0, 'RIFF');
-      view.setUint32(4, 36 + samples.length * 2, true);
-      writeString(8, 'WAVE');
-      writeString(12, 'fmt ');
-      view.setUint32(16, 16, true);
-      view.setUint16(20, 1, true);
-      view.setUint16(22, 1, true);
-      view.setUint32(24, sampleRate, true);
-      view.setUint32(28, sampleRate * 2, true);
-      view.setUint16(32, 2, true);
-      view.setUint16(34, 16, true);
-      writeString(36, 'data');
-      view.setUint32(40, samples.length * 2, true);
 
-      let offset = 44;
-      for (let i = 0; i < samples.length; i++, offset += 2) {
-        const s = Math.max(-1, Math.min(1, samples[i]));
-        view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
-      }
-
-      return buffer;
+        return buffer;
     }
 
     btnIniciar.onclick = async () => {
-      audioChunks = [];
-      try {
-        recordingStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 44100 });
-        const source = audioContext.createMediaStreamSource(recordingStream);
-        const processor = audioContext.createScriptProcessor(4096, 1, 1);
-        const recordedSamples = [];
+        audioChunks = [];
+        try {
+            recordingStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 44100 });
+            const source = audioContext.createMediaStreamSource(recordingStream);
+            const processor = audioContext.createScriptProcessor(4096, 1, 1);
+            const recordedSamples = [];
 
-        processor.onaudioprocess = (e) => {
-          const inputData = e.inputBuffer.getChannelData(0);
-          recordedSamples.push(new Float32Array(inputData));
-        };
+            processor.onaudioprocess = (e) => {
+                const inputData = e.inputBuffer.getChannelData(0);
+                recordedSamples.push(new Float32Array(inputData));
+            };
 
-        source.connect(processor);
-        processor.connect(audioContext.destination);
+            source.connect(processor);
+            processor.connect(audioContext.destination);
 
-        mediaRecorder = new MediaRecorder(recordingStream);
-        mediaRecorder.ondataavailable = e => {
-          if (e.data.size > 0) {
-            audioChunks.push(e.data);
-          }
-        };
+            mediaRecorder = new MediaRecorder(recordingStream);
+            mediaRecorder.ondataavailable = e => {
+                if (e.data.size > 0) {
+                    audioChunks.push(e.data);
+                }
+            };
 
-        mediaRecorder.onstop = async () => {
-          processor.disconnect();
-          source.disconnect();
-          if (audioContext.state !== 'closed') await audioContext.close();
-          recordingStream.getTracks().forEach(track => track.stop());
+            mediaRecorder.onstop = async () => {
+                processor.disconnect();
+                source.disconnect();
+                if (audioContext.state !== 'closed') await audioContext.close();
+                recordingStream.getTracks().forEach(track => track.stop());
 
-          const totalLength = recordedSamples.reduce((acc, chunk) => acc + chunk.length, 0);
-          const combinedSamples = new Float32Array(totalLength);
-          let offset = 0;
-          recordedSamples.forEach(chunk => {
-            combinedSamples.set(chunk, offset);
-            offset += chunk.length;
-          });
+                const totalLength = recordedSamples.reduce((acc, chunk) => acc + chunk.length, 0);
+                const combinedSamples = new Float32Array(totalLength);
+                let offset = 0;
+                recordedSamples.forEach(chunk => {
+                    combinedSamples.set(chunk, offset);
+                    offset += chunk.length;
+                });
 
-          const wavBuffer = encodeWAV(combinedSamples, 44100);
-          const finalBlob = new Blob([wavBuffer], { type: 'audio/wav' });
-          const audioUrl = URL.createObjectURL(finalBlob);
-          preview.src = audioUrl;
+                const wavBuffer = encodeWAV(combinedSamples, 44100);
+                const finalBlob = new Blob([wavBuffer], { type: 'audio/wav' });
+                const audioUrl = URL.createObjectURL(finalBlob);
+                preview.src = audioUrl;
 
-          const reader = new FileReader();
-          reader.readAsDataURL(finalBlob);
-          reader.onloadend = () => {
-            audioDataInput.value = reader.result;
-          };
-          document.getElementById("enviar").disabled = false;
-        };
+                const reader = new FileReader();
+                reader.readAsDataURL(finalBlob);
+                reader.onloadend = () => {
+                    audioDataInput.value = reader.result;
+                };
+                document.getElementById("enviar").disabled = false;
+            };
 
-        mediaRecorder.start();
-        btnIniciar.style.display = "none";
-        btnDetener.style.display = "inline-block";
-      } catch (err) {
-        console.error('Error detallado:', err);
-        alert("Error al acceder al micrófono: " + err.message);
-      }
+            mediaRecorder.start();
+            btnIniciar.style.display = "none";
+            btnDetener.style.display = "inline-block";
+        } catch (err) {
+            console.error('Error detallado:', err);
+            alert("Error al acceder al micrófono: " + err.message);
+        }
     };
 
     btnDetener.onclick = () => {
-      if (mediaRecorder && mediaRecorder.state === "recording") {
-        mediaRecorder.stop();
-        btnDetener.style.display = "none";
-        btnIniciar.style.display = "inline-block";
-      }
+        if (mediaRecorder && mediaRecorder.state === "recording") {
+            mediaRecorder.stop();
+            btnDetener.style.display = "none";
+            btnIniciar.style.display = "inline-block";
+        }
     };
-  </script>
+</script>
   {% endif %}
 
   <br><br>
