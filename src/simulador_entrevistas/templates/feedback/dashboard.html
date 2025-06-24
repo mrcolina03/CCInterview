@@ -1,34 +1,74 @@
-{% block content %}
-<h2>Historial de Entrevistas</h2>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard de Entrevistas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 2rem;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            color: #333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1.5rem;
+            background-color: white;
+        }
+        th, td {
+            padding: 0.75rem;
+            border: 1px solid #ccc;
+            text-align: center;
+        }
+        th {
+            background-color: #eee;
+        }
+        .estado-finalizada {
+            color: green;
+        }
+        .estado-activa {
+            color: orange;
+        }
+    </style>
+</head>
+<body>
+    <h1>Hola, {{ usuario.nombre }} 👋</h1>
+    <h2>Historial de Entrevistas</h2>
 
-<table border="1">
-    <thead>
-        <tr>
-            <th>Fecha</th>
-            <th>Estado</th>
-            <th>Preguntas</th>
-            <th>Cod.</th>
-            <th>Téc.</th>
-            <th>Bland.</th>
-            <th>Prom. LLM</th>
-            <th>Prom. Audio</th>
-            <th>Ver</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for e in entrevistas %}
-        <tr>
-            <td>{{ e.fecha }}</td>
-            <td>{{ e.estado }}</td>
-            <td>{{ e.total }}</td>
-            <td>{{ e.codigo }}</td>
-            <td>{{ e.tecnica }}</td>
-            <td>{{ e.blanda }}</td>
-            <td>{{ e.promedio_llm }}</td>
-            <td>{{ e.promedio_audio }}</td>
-            <td><a href="/resultados/{{ e._id }}">Ver</a></td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-{% endblock %}
+    {% if entrevistas %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Preguntas</th>
+                    <th>Código</th>
+                    <th>Técnicas</th>
+                    <th>Blandas</th>
+                    <th>Estado</th>
+                    <th>Promedio LLM</th>
+                    <th>Promedio Audio</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entrevista in entrevistas %}
+                    <tr>
+                        <td>{{ entrevista.fecha }}</td>
+                        <td>{{ entrevista.total }}</td>
+                        <td>{{ entrevista.codigo }}</td>
+                        <td>{{ entrevista.tecnica }}</td>
+                        <td>{{ entrevista.blanda }}</td>
+                        <td class="estado-{{ entrevista.estado | lower }}">{{ entrevista.estado }}</td>
+                        <td>{{ entrevista.promedio_llm }}</td>
+                        <td>{{ entrevista.promedio_audio }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No tienes entrevistas registradas todavía.</p>
+    {% endif %}
+</body>
+</html>
