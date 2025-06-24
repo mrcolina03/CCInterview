@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Request, Form, Depends, HTTPException
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from bson import ObjectId
 from db.mongo import db
@@ -107,11 +107,9 @@ async def perfil_usuario(request: Request, user: dict = Depends(get_current_user
 
     cv = await db["curriculum"].find_one({"usuario_id": ObjectId(user_id)})
 
+    
     if not cv:
-        return templates.TemplateResponse("mensaje3.html", {
-            "request": request,
-            "mensaje": "Aún no has registrado tu CV."
-        })
+        return RedirectResponse(url="/?cv=false", status_code=302)
 
     return templates.TemplateResponse("index.html", {
         "request": request,
@@ -183,10 +181,7 @@ async def guardar_cv_y_perfil(request, user, nombre, lenguajes, frameworks, base
         print(f"Error al guardar CV o generar perfil: {e}")
         if "result_cv" in locals() and result_cv.inserted_id:
             await db["curriculum"].delete_one({"_id": result_cv.inserted_id})
-        return templates.TemplateResponse("mensaje4.html", {
-            "request": request,
-            "mensaje": "Ocurrió un error y no se guardaron los datos."
-        })
+        return RedirectResponse(url="/?cv=error", status_code=302)
 
     return templates.TemplateResponse("index.html", {
         "request": request,
