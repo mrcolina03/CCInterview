@@ -4,7 +4,7 @@ from fastapi.templating import Jinja2Templates
 from bson import ObjectId
 from db.mongo import db
 from auth.dependencies import get_current_user
-from utils.perfil_usuario import crear_perfil_usuario
+from utils.perfil_usuario import crear_perfil_usuario, eliminar_perfil
 import os
 
 router = APIRouter()
@@ -36,6 +36,92 @@ async def submit_form(
     estudio_titulo: list[str] = Form(default=[]),
     estudio_anios: list[str] = Form(default=[])
 ):
+    user_id = ObjectId(user["sub"])
+    existente = await db["curriculum"].find_one({"usuario_id": user_id})
+
+    if existente:
+        form_data = {
+            "nombre": nombre,
+            "lenguajes": lenguajes,
+            "frameworks": frameworks,
+            "bases_datos": bases_datos,
+            "herramientas": herramientas,
+            "exp_puesto": exp_puesto,
+            "exp_empresa": exp_empresa,
+            "exp_duracion": exp_duracion,
+            "exp_descripcion": exp_descripcion,
+            "cert_nombre": cert_nombre,
+            "cert_emisor": cert_emisor,
+            "idioma_nombre": idioma_nombre,
+            "idioma_nivel": idioma_nivel,
+            "estudio_institucion": estudio_institucion,
+            "estudio_titulo": estudio_titulo,
+            "estudio_anios": estudio_anios
+        }
+        return templates.TemplateResponse("confirmacion_cv.html", {
+            "request": request,
+            "form_data": form_data
+        })
+
+    # Si no existe CV, sigue el flujo normal
+    return await guardar_cv_y_perfil(
+        request, user, nombre, lenguajes, frameworks, bases_datos, herramientas,
+        exp_puesto, exp_empresa, exp_duracion, exp_descripcion,
+        cert_nombre, cert_emisor, idioma_nombre, idioma_nivel,
+        estudio_institucion, estudio_titulo, estudio_anios
+    )
+
+@router.post("/confirmar")
+async def confirmar_cv(
+    request: Request,
+    user: dict = Depends(get_current_user),
+    nombre: str = Form(...),
+    lenguajes: str = Form(...),
+    frameworks: str = Form(""),
+    bases_datos: str = Form(""),
+    herramientas: str = Form(""),
+    exp_puesto: list[str] = Form(default=[]),
+    exp_empresa: list[str] = Form(default=[]),
+    exp_duracion: list[str] = Form(default=[]),
+    exp_descripcion: list[str] = Form(default=[]),
+    cert_nombre: list[str] = Form(default=[]),
+    cert_emisor: list[str] = Form(default=[]),
+    idioma_nombre: list[str] = Form(default=[]),
+    idioma_nivel: list[str] = Form(default=[]),
+    estudio_institucion: list[str] = Form(default=[]),
+    estudio_titulo: list[str] = Form(default=[]),
+    estudio_anios: list[str] = Form(default=[])
+):
+    await eliminar_perfil(user)
+    return await guardar_cv_y_perfil(
+        request, user, nombre, lenguajes, frameworks, bases_datos, herramientas,
+        exp_puesto, exp_empresa, exp_duracion, exp_descripcion,
+        cert_nombre, cert_emisor, idioma_nombre, idioma_nivel,
+        estudio_institucion, estudio_titulo, estudio_anios
+    )
+
+
+@router.get("/index", response_class=HTMLResponse)
+async def perfil_usuario(request: Request, user: dict = Depends(get_current_user)):
+    user_id = user["sub"]
+
+    cv = await db["curriculum"].find_one({"usuario_id": ObjectId(user_id)})
+
+    if not cv:
+        return templates.TemplateResponse("mensaje3.html", {
+            "request": request,
+            "mensaje": "Aún no has registrado tu CV."
+        })
+
+    return templates.TemplateResponse("index.html", {
+        "request": request,
+        "cv": cv
+    })
+
+async def guardar_cv_y_perfil(request, user, nombre, lenguajes, frameworks, bases_datos, herramientas,
+                              exp_puesto, exp_empresa, exp_duracion, exp_descripcion,
+                              cert_nombre, cert_emisor, idioma_nombre, idioma_nivel,
+                              estudio_institucion, estudio_titulo, estudio_anios):
     user_id = user["sub"]
 
     experiencia = [
@@ -106,21 +192,4 @@ async def submit_form(
         "request": request,
         "mensaje": "CV y perfil guardados exitosamente.",
         "cv": curriculum
-    })
-
-@router.get("/index", response_class=HTMLResponse)
-async def perfil_usuario(request: Request, user: dict = Depends(get_current_user)):
-    user_id = user["sub"]
-
-    cv = await db["curriculum"].find_one({"usuario_id": ObjectId(user_id)})
-
-    if not cv:
-        return templates.TemplateResponse("mensaje3.html", {
-            "request": request,
-            "mensaje": "Aún no has registrado tu CV."
-        })
-
-    return templates.TemplateResponse("index.html", {
-        "request": request,
-        "cv": cv
     })
