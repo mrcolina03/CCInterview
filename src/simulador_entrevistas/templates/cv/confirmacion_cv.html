@@ -1,0 +1,24 @@
+<!-- templates/cv/confirmacion_cv.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Confirmación de reemplazo de CV</title>
+</head>
+<body>
+    <h2>⚠️ Ya tienes un CV registrado</h2>
+    <p>Al continuar, se eliminará tu CV y perfil anterior y se reiniciará tu progreso en las entrevistas.</p>
+    <form action="/cv/confirmar" method="post">
+        {% for key, value in form_data.items() %}
+            {% if value is iterable and not value|string %}
+                {% for item in value %}
+                    <input type="hidden" name="{{ key }}" value="{{ item }}">
+                {% endfor %}
+            {% else %}
+                <input type="hidden" name="{{ key }}" value="{{ value }}">
+            {% endif %}
+        {% endfor %}
+        <input type="submit" value="Sí, reemplazar CV y reiniciar progreso">
+    </form>
+</body>
+</html>
