@@ -8,7 +8,6 @@ UMBRAL_SIMILITUD = 0.92  # ajustable
 async def generar_y_guardar_pregunta(db, entrevista: dict, tipo: str, habilidad: str, subtematica: str):
     print(f"Generando pregunta para tipo: {tipo}, habilidad: {habilidad}, subtemática: {subtematica}")
     perfil = await obtener_perfil_usuario(db, str(entrevista["usuario_id"]))
-    print("Perfil obtenido:", perfil)
     habilidad_data = next((h for h in perfil["tematicas_a_evaluar"] if h["habilidad"] == habilidad), None)
     if not habilidad_data:
         print("No se encontró habilidad_data")
