@@ -9,3 +9,8 @@ async def crear_perfil_usuario(cv_dict: dict):
 
     # Ya no insertamos el perfil aquí, solo lo retornamos
     return perfil
+
+async def eliminar_perfil(user: dict):
+    user_id = ObjectId(user["sub"])
+    await db["perfil_usuario"].delete_one({"usuario_id": user_id})
+    await db["curriculum"].delete_one({"usuario_id": user_id})
