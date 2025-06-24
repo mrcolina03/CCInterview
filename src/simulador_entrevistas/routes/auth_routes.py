@@ -7,6 +7,12 @@ from fastapi.templating import Jinja2Templates
 from db.mongo import db
 from auth.auth import hash_password, verify_password, create_access_token, decode_token
 from utils.email import enviar_correo
+from utils.adaptabilidad import (
+    evaluar_creacion_nueva_habilidad,
+    evaluar_creacion_nueva_subtematica,
+    generar_nueva_habilidad,
+    generar_nueva_subtematica
+)
 from bson import ObjectId
 import os
 
@@ -143,14 +149,34 @@ async def login_user(request: Request, email: str = Form(...), password: str = F
         raise HTTPException(status_code=401, detail="Credenciales inválidas.")
 
     if not user.get("verificado"):
-        # Mostrar página para reenviar verificación
         return templates.TemplateResponse("reenviar_verificacion.html", {
             "request": request,
             "email": email
         })
 
-    token = create_access_token({"sub": str(user["_id"]), "email": user["email"], "rol": user.get("rol", "user")})
+    user_id = str(user["_id"])
+
+    # 🔁 ADAPTABILIDAD: Evaluar y generar nuevas habilidades o subtemáticas si corresponde
+    crear_tecnica = await evaluar_creacion_nueva_habilidad(db, user_id, "tecnica")
+    crear_blanda = await evaluar_creacion_nueva_habilidad(db, user_id, "blanda")
+    if crear_tecnica:
+        await generar_nueva_habilidad(db, user_id, "tecnica")
+    if crear_blanda:
+        await generar_nueva_habilidad(db, user_id, "blanda")
+
+    nuevas_subs_tecnicas = await evaluar_creacion_nueva_subtematica(db, user_id, "tecnica")
+    nuevas_subs_blandas = await evaluar_creacion_nueva_subtematica(db, user_id, "blanda")
+
+    for habilidad, debe_crear in nuevas_subs_tecnicas.items():
+        if debe_crear:
+            await generar_nueva_subtematica(db, user_id, habilidad, "tecnica")
+
+    for habilidad, debe_crear in nuevas_subs_blandas.items():
+        if debe_crear:
+            await generar_nueva_subtematica(db, user_id, habilidad, "blanda")
+
+    # 🔐 Crear token y redirigir
+    token = create_access_token({"sub": user_id, "email": user["email"], "rol": user.get("rol", "user")})
     response = RedirectResponse("/", status_code=303)
     response.set_cookie(key="access_token", value=token, httponly=True)
     return response
-
