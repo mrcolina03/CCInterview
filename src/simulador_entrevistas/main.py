@@ -27,7 +27,7 @@ app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), na
 templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
 
 @app.get("/", response_class=HTMLResponse)
-async def index(request: Request, cv: Optional[str] = None):
+async def index(request: Request, cv: Optional[str] = None, error: Optional[str] = None):
     token = request.cookies.get("access_token")
     user = None
 
@@ -42,6 +42,11 @@ async def index(request: Request, cv: Optional[str] = None):
     
     if cv == "error":
         mensaje = "Ha ocurrido un error. Vuelve a intentarlo"
+        
+    if error== "mongo":
+        mensaje = "Error al conectar con la base de datos. Por favor, inténtalo más tarde."
+    elif error == "unexpected":
+        mensaje = "Ha ocurrido un error inesperado. Por favor, inténtalo más tarde."
         
     return templates.TemplateResponse("index.html", {"request": request, "user": user, "mensaje": mensaje   })
 
