@@ -1,3 +1,4 @@
+from typing import Optional
 from fastapi import FastAPI, Request, Response
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
@@ -26,7 +27,7 @@ app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), na
 templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
 
 @app.get("/", response_class=HTMLResponse)
-async def index(request: Request):
+async def index(request: Request, cv: Optional[str] = None):
     token = request.cookies.get("access_token")
     user = None
 
@@ -35,8 +36,14 @@ async def index(request: Request):
         if payload:
             user = {"id": payload.get("sub"), "email": payload.get("email"), "rol": payload.get("rol")}
 
-
-    return templates.TemplateResponse("index.html", {"request": request, "user": user})
+    mensaje = None
+    if cv == "false":
+        mensaje = "Aún no has registrado tu CV."
+    
+    if cv == "error":
+        mensaje = "Ha ocurrido un error. Vuelve a intentarlo"
+        
+    return templates.TemplateResponse("index.html", {"request": request, "user": user, "mensaje": mensaje   })
 
 # Ruta para cerrar sesión
 @app.get("/logout")
