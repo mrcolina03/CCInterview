@@ -1,0 +1,105 @@
+{% block content %}
+<h2>Editor de Plantillas por Lenguaje</h2>
+
+<form method="post" onsubmit="copiarPlantillas()">
+  <div id="contenedor-plantillas"></div>
+
+  <button type="button" onclick="agregarPlantilla()">➕ Añadir lenguaje</button>
+  <button type="submit">💾 Guardar</button>
+    <a href="/config/admin" class="btn btn-secondary">Cancelar</a>
+
+
+  <!-- inputs ocultos para enviar las plantillas -->
+  <div id="inputs-hidden"></div>
+</form>
+
+<style>
+.editor {
+  height: 200px;
+  border: 1px solid #ccc;
+  margin-bottom: 16px;
+}
+.lenguaje-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+}
+.lenguaje-header input {
+  flex-grow: 1;
+  padding: 4px;
+}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/monaco-editor@latest/min/vs/loader.js"></script>
+<script>
+require.config({ paths: { vs: "https://cdn.jsdelivr.net/npm/monaco-editor@latest/min/vs" } });
+
+let editores = [];
+let contador = 0;
+
+require(["vs/editor/editor.main"], function () {
+  const plantillas = {{ plantillas | tojson | safe }};
+  for (const lenguaje in plantillas) {
+    crearEditor(lenguaje, plantillas[lenguaje]);
+  }
+});
+
+function crearEditor(lenguaje = "", contenido = "") {
+  const contenedor = document.getElementById("contenedor-plantillas");
+
+  const wrapper = document.createElement("div");
+  wrapper.className = "plantilla-wrapper";
+
+  const header = document.createElement("div");
+  header.className = "lenguaje-header";
+
+  const inputLenguaje = document.createElement("input");
+  inputLenguaje.type = "text";
+  inputLenguaje.placeholder = "Nombre del lenguaje";
+  inputLenguaje.value = lenguaje;
+  inputLenguaje.className = "input-lenguaje";
+
+  header.appendChild(document.createTextNode("Lenguaje:"));
+  header.appendChild(inputLenguaje);
+
+  const editorDiv = document.createElement("div");
+  editorDiv.id = `editor-${contador}`;
+  editorDiv.className = "editor";
+
+  wrapper.appendChild(header);
+  wrapper.appendChild(editorDiv);
+  contenedor.appendChild(wrapper);
+
+  const editor = monaco.editor.create(editorDiv, {
+    value: contenido,
+    language: lenguaje || "plaintext",
+    theme: "vs-dark"
+  });
+
+  editores.push({ input: inputLenguaje, editor });
+  contador++;
+}
+
+function copiarPlantillas() {
+  const hidden = document.getElementById("inputs-hidden");
+  hidden.innerHTML = "";
+
+  editores.forEach(({ input, editor }) => {
+    const lenguaje = input.value.trim().toLowerCase();
+    if (!lenguaje) return;
+
+    const valor = editor.getValue();
+    const inputHidden = document.createElement("input");
+    inputHidden.type = "hidden";
+    inputHidden.name = `plantilla_${lenguaje}`;
+    inputHidden.value = valor;
+    hidden.appendChild(inputHidden);
+  });
+}
+
+function agregarPlantilla() {
+  crearEditor();
+}
+</script>
+{% endblock %}

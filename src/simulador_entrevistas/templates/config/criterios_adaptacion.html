@@ -1,0 +1,78 @@
+{% block content %}
+<h2>Criterios de Adaptación</h2>
+<form method="post" oninput="actualizarResumen()">
+    <h3>Habilidades</h3>
+    <label>Umbral dominio global</label>
+    <input type="number" name="umbral_global_valor" value="{{ criterios.habilidades.umbral_dominio_global.valor }}">
+    <input type="number" step="0.1" name="umbral_global_porcentaje"
+        value="{{ criterios.habilidades.umbral_dominio_global.porcentaje }}">
+    <input type="checkbox" name="umbral_global_activo" {% if criterios.habilidades.umbral_dominio_global.activo
+        %}checked{% endif %}><br>
+
+    <label>Número de subtemáticas</label>
+    <input type="number" name="num_subtematicas_valor" value="{{ criterios.habilidades.num_subtematicas.valor }}">
+    <input type="number" step="0.1" name="num_subtematicas_porcentaje"
+        value="{{ criterios.habilidades.num_subtematicas.porcentaje }}">
+    <input type="checkbox" name="num_subtematicas_activo" {% if criterios.habilidades.num_subtematicas.activo
+        %}checked{% endif %}><br>
+
+
+    <h3>Subtemáticas</h3>
+    <label>Umbral dominio</label>
+    <input type="number" name="umbral_dominio_valor" value="{{ criterios.subtematicas.umbral_dominio.valor }}">
+    <input type="number" step="0.1" name="umbral_dominio_porcentaje"
+        value="{{ criterios.subtematicas.umbral_dominio.porcentaje }}">
+    <input type="checkbox" name="umbral_dominio_activo" {% if criterios.subtematicas.umbral_dominio.activo %}checked{%
+        endif %}><br>
+
+    <label>Número de preguntas</label>
+    <input type="number" name="num_preguntas_valor" value="{{ criterios.subtematicas.num_preguntas.valor }}">
+    <input type="number" step="0.1" name="num_preguntas_porcentaje"
+        value="{{ criterios.subtematicas.num_preguntas.porcentaje }}">
+    <input type="checkbox" name="num_preguntas_activo" {% if criterios.subtematicas.num_preguntas.activo %}checked{%
+        endif %}><br>
+
+    <label>Refuerzo por repetición</label>
+    <input type="number" step="0.1" name="refuerzo_repeticion_porcentaje"
+        value="{{ criterios.subtematicas.refuerzo_repeticion.porcentaje }}">
+    <input type="checkbox" name="refuerzo_repeticion_activo" {% if criterios.subtematicas.refuerzo_repeticion.activo
+        %}checked{% endif %}><br>
+
+
+    <button type="submit">Guardar</button>
+</form>
+
+<hr>
+<h3>Resumen generado:</h3>
+<pre id="resumen"></pre>
+
+<script>
+    function actualizarResumen() {
+        const v = (id) => document.querySelector(`[name="${id}"]`)?.value || 0;
+        const c = (id) => document.querySelector(`[name="${id}"]`)?.checked;
+
+        const resumen = [];
+
+        if (c("umbral_global_activo"))
+            resumen.push(`Habilidades - umbral dominio global:\nSi el ${v("umbral_global_porcentaje") * 100}% de las habilidades alcanza una puntuación promedio de ${v("umbral_global_valor")}, entonces se crea una nueva habilidad automáticamente.\n`);
+
+        if (c("num_subtematicas_activo"))
+            resumen.push(`Habilidades - número de subtemáticas:\nSi el ${v("num_subtematicas_porcentaje") * 100}% de las habilidades alcanza ${v("num_subtematicas_valor")} subtemáticas, entonces se crea una nueva habilidad automáticamente.\n`);
+
+        if (c("umbral_dominio_activo"))
+            resumen.push(`Subtemáticas - umbral dominio:\nSi el ${v("umbral_dominio_porcentaje")*100}% de las subtemáticas alcanza una puntuación promedio de ${v("umbral_dominio_valor")}, entonces se crea una nueva subtemática automáticamente.\n`);
+
+        if (c("num_preguntas_activo"))
+            resumen.push(`Subtemáticas - número de preguntas:\nSi el ${v("num_preguntas_porcentaje") * 100}% de las subtemáticas alcanza ${v("num_preguntas_valor")} preguntas, entonces se crea una nueva subtemática automáticamente.\n`);
+
+        if (c("refuerzo_repeticion_activo"))
+            resumen.push(`Subtemáticas - refuerzo por repetición:\nDespués de un ciclo de evaluación, se aplicará un refuerzo del ${v("refuerzo_repeticion_porcentaje")*100}% de las subtemáticas con menos puntaje dentro de la habilidad.\n`);
+
+        document.getElementById("resumen").innerText = resumen.join("\n");
+    }
+
+    window.onload = actualizarResumen;
+</script>
+  <a href="/config/admin" class="btn btn-secondary">Cancelar</a>
+
+{% endblock %}
