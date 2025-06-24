@@ -1,4 +1,4 @@
-
+from pymongo.errors import ConfigurationError, ServerSelectionTimeoutError
 from datetime import timedelta
 from urllib.parse import urlencode
 from fastapi import APIRouter, Form, HTTPException, Request
@@ -144,7 +144,15 @@ async def login_form(request: Request):
 
 @router.post("/login")
 async def login_user(request: Request, email: str = Form(...), password: str = Form(...)):
-    user = await db["usuarios"].find_one({"email": email})
+    try: 
+        user = await db["usuarios"].find_one({"email": email})
+    except (ConfigurationError, ServerSelectionTimeoutError) as e:
+        return RedirectResponse(url="/?error=mongo", status_code=303)
+
+    except Exception as e:
+        return RedirectResponse(url="/?error=unexpected", status_code=303)
+
+    
     if not user or not verify_password(password, user["password_hash"]):
         raise HTTPException(status_code=401, detail="Credenciales inválidas.")
 
