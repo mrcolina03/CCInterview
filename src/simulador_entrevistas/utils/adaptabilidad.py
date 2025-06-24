@@ -341,13 +341,11 @@ async def escoger_habilidades_subtematica(db, usuario_id: str, tipo: Literal["te
 
 async def detectar_lenguajes_perfil(db: AsyncIOMotorDatabase, usuario_id: str):
     perfil = await obtener_perfil_usuario(db, usuario_id)
-    print(f"perfil: {perfil}")
     if not perfil:
         print(f"No se encontró el perfil")
         return
 
     tecnicas = [h for h in perfil.get("tematicas_a_evaluar", []) if h["tipo"] == "tecnica"]
-    print(f"tecnicas extraidas: {tecnicas}")
     lenguajes = await identificar_lenguajes_judge0(tecnicas)
     print(f"lenguajes generados por modelo: {lenguajes}")
 
@@ -363,6 +361,7 @@ async def detectar_lenguajes_perfil(db: AsyncIOMotorDatabase, usuario_id: str):
             {"usuario_id": perfil["usuario_id"]},
             {"$push": {"lenguajes_evaluar": {"$each": nuevos}}}
         )
+    return lenguajes
 
 async def escoger_lenguaje(db: AsyncIOMotorDatabase, usuario_id: str, cantidad: int):
     perfil = await obtener_perfil_usuario(db, usuario_id)
