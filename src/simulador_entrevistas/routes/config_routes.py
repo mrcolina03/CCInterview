@@ -1,4 +1,6 @@
+from typing import Dict
 from fastapi import APIRouter, Request, Form, Depends, HTTPException
+from fastapi.datastructures import FormData
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from db.mongo import db
@@ -8,6 +10,14 @@ import os
 router = APIRouter()
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates/config"))
+
+@router.get("/admin", response_class=HTMLResponse)
+async def index_config(request: Request, user: dict = Depends(get_current_user)):
+    if user.get("rol") != "admin":
+        return RedirectResponse("/", status_code=303)
+    msg = request.query_params.get("msg")  # Leer parámetro msg
+    return templates.TemplateResponse("admin.html", {"request": request, "user": user, "msg": msg})
+
 
 @router.get("/duracion", response_class=HTMLResponse)
 async def mostrar_configuracion(request: Request, user: dict = Depends(get_current_user)):
@@ -71,4 +81,131 @@ async def guardar_configuracion(
     }
 
     await db["config"].replace_one({"_id": "duraciones"}, nueva_config, upsert=True)
-    return RedirectResponse("/", status_code=303)
+    return RedirectResponse("/config/admin?msg=ok", status_code=303)
+
+@router.get("/criterios", response_class=HTMLResponse)
+async def mostrar_criterios(request: Request, user: dict = Depends(get_current_user)):
+    if user.get("rol") != "admin":
+        return RedirectResponse("/", status_code=303)
+
+    criterios = await db["config"].find_one({"_id": "criterios_adaptacion"})
+    if not criterios:
+        criterios = {
+            "_id": "criterios_adaptacion",
+            "subtematicas": {
+                "umbral_dominio": {"valor": 10, "porcentaje": 1, "activo": True},
+                "num_preguntas": {"valor": 10, "porcentaje": 1, "activo": True},
+                "refuerzo_repeticion": {"porcentaje": 0.3, "activo": True}
+            },
+            "habilidades": {
+                "umbral_dominio_global": {"valor": 10, "porcentaje": 1, "activo": True},
+                "num_subtematicas": {"valor": 10, "porcentaje": 1, "activo": True}
+            }
+        }
+        await db["config"].insert_one(criterios)
+
+    return templates.TemplateResponse("criterios_adaptacion.html", {"request": request, "user": user, "criterios": criterios})
+
+@router.post("/criterios")
+async def guardar_criterios(
+    request: Request,
+    user: dict = Depends(get_current_user),
+    # Subtemáticas
+    umbral_dominio_valor: int = Form(...),
+    umbral_dominio_porcentaje: float = Form(...),
+    umbral_dominio_activo: bool = Form(...),
+    num_preguntas_valor: int = Form(...),
+    num_preguntas_porcentaje: float = Form(...),
+    num_preguntas_activo: bool = Form(...),
+    refuerzo_repeticion_porcentaje: float = Form(...),
+    refuerzo_repeticion_activo: bool = Form(...),
+    # Habilidades
+    umbral_global_valor: int = Form(...),
+    umbral_global_porcentaje: float = Form(...),
+    umbral_global_activo: bool = Form(...),
+    num_subtematicas_valor: int = Form(...),
+    num_subtematicas_porcentaje: float = Form(...),
+    num_subtematicas_activo: bool = Form(...)
+):
+    if user.get("rol") != "admin":
+        raise HTTPException(status_code=403, detail="Acceso no autorizado")
+
+    criterios = {
+        "_id": "criterios_adaptacion",
+        "subtematicas": {
+            "umbral_dominio": {
+                "valor": umbral_dominio_valor,
+                "porcentaje": umbral_dominio_porcentaje,
+                "activo": umbral_dominio_activo
+            },
+            "num_preguntas": {
+                "valor": num_preguntas_valor,
+                "porcentaje": num_preguntas_porcentaje,
+                "activo": num_preguntas_activo
+            },
+            "refuerzo_repeticion": {
+                "porcentaje": refuerzo_repeticion_porcentaje,
+                "activo": refuerzo_repeticion_activo
+            }
+        },
+        "habilidades": {
+            "umbral_dominio_global": {
+                "valor": umbral_global_valor,
+                "porcentaje": umbral_global_porcentaje,
+                "activo": umbral_global_activo
+            },
+            "num_subtematicas": {
+                "valor": num_subtematicas_valor,
+                "porcentaje": num_subtematicas_porcentaje,
+                "activo": num_subtematicas_activo
+            }
+        }
+    }
+
+    await db["config"].replace_one({"_id": "criterios_adaptacion"}, criterios, upsert=True)
+    return RedirectResponse("/config/admin?msg=ok", status_code=303)
+
+@router.get("/plantillas", response_class=HTMLResponse)
+async def mostrar_plantillas(request: Request, user: dict = Depends(get_current_user)):
+    if user.get("rol") != "admin":
+        return RedirectResponse("/", status_code=303)
+
+    config = await db["config"].find_one({"_id": "plantillas_codigo"})
+    if not config:
+        config = {
+            "_id": "plantillas_codigo",
+            "plantillas": {
+                "python": "# Código Python aquí",
+                "javascript": "// Código JavaScript aquí",
+                "php": "<?php\n\n// Código PHP aquí\n\n?>"
+            }
+        }
+        await db["config"].insert_one(config)
+
+    return templates.TemplateResponse("plantillas_judge.html", {
+        "request": request,
+        "user": user,
+        "plantillas": config["plantillas"]
+    })
+
+
+@router.post("/plantillas")
+async def guardar_plantillas(request: Request, user: dict = Depends(get_current_user)):
+    if user.get("rol") != "admin":
+        raise HTTPException(status_code=403, detail="Acceso no autorizado")
+
+    form: FormData = await request.form()
+    plantillas: Dict[str, str] = {}
+
+    for key, value in form.multi_items():
+        if key.startswith("plantilla_"):
+            lenguaje = key.replace("plantilla_", "")
+            plantillas[lenguaje] = value
+
+    await db["config"].replace_one(
+        {"_id": "plantillas_codigo"},
+        {"_id": "plantillas_codigo", "plantillas": plantillas},
+        upsert=True
+    )
+
+    return RedirectResponse("/config/admin?msg=ok", status_code=303)
