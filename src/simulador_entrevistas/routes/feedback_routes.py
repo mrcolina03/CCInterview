@@ -161,31 +161,44 @@ async def mostrar_dashboard(request: Request):
     if not payload:
         return RedirectResponse(url="/auth/login")
 
-    usuario_id = payload.get("user_id")
+    usuario_id = payload.get("sub")
+    print("Payload del token:", payload)
 
-    entrevistas = await db["entrevistas"].find({"usuario_id": ObjectId(usuario_id)}).to_list(length=None)
+    try:
+        usuario_obj_id = ObjectId(usuario_id)
+    except Exception:
+        usuario_obj_id = usuario_id
+
+    entrevistas = await db["entrevistas"].find({"usuario_id": usuario_obj_id}).to_list(length=None)
+
+    print(f"Entrevistas encontradas para usuario {usuario_id}: {len(entrevistas)}")
 
     entrevistas_con_detalles = []
     for entrevista in entrevistas:
         entrevista_id = entrevista["_id"]
 
         preguntas = await db["preguntas"].find({"entrevista_id": entrevista_id}).to_list(length=None)
-        total = len(preguntas)
-        codigos = sum(1 for p in preguntas if p["tipo"] == "codigo")
-        tecnicas = sum(1 for p in preguntas if p["tipo"] == "tecnica")
-        blandas = sum(1 for p in preguntas if p["tipo"] == "blanda")
-
         respuestas = await db["respuestas"].find({"entrevista_id": entrevista_id}).to_list(length=None)
 
+        print(f"Entrevista {entrevista_id} tiene {len(preguntas)} preguntas y {len(respuestas)} respuestas")
+
+        if not preguntas and not respuestas:
+            continue  # Saltar entrevistas sin datos reales
+
+        total = len(preguntas)
+        codigos = sum(1 for p in preguntas if p.get("tipo") == "codigo")
+        tecnicas = sum(1 for p in preguntas if p.get("tipo") == "tecnica")
+        blandas = sum(1 for p in preguntas if p.get("tipo") == "blanda")
+
         puntajes_llm = [r["evaluacion_llm"]["puntaje"] for r in respuestas if r.get("evaluacion_llm")]
-        puntajes_audio = [r["puntaje_audio"] for r in respuestas if r.get("puntaje_audio")]
+        puntajes_audio = [r["puntaje_audio"] for r in respuestas if r.get("puntaje_audio") is not None]
 
         promedio_llm = sum(puntajes_llm) / len(puntajes_llm) if puntajes_llm else None
         promedio_audio = sum(puntajes_audio) / len(puntajes_audio) if puntajes_audio else None
 
         entrevistas_con_detalles.append({
             "_id": str(entrevista_id),
-            "fecha": entrevista.get("fecha_inicio").strftime("%Y-%m-%d %H:%M"),
+            "fecha": entrevista.get("fecha_inicio").strftime("%Y-%m-%d %H:%M") if entrevista.get("fecha_inicio") else "Sin fecha",
             "total": total,
             "codigo": codigos,
             "tecnica": tecnicas,
@@ -194,6 +207,8 @@ async def mostrar_dashboard(request: Request):
             "promedio_llm": round(promedio_llm, 1) if promedio_llm else "N/A",
             "promedio_audio": round(promedio_audio, 1) if promedio_audio else "N/A"
         })
+
+    print("Entrevistas con detalles:", entrevistas_con_detalles)
 
     return templates.TemplateResponse("dashboard.html", {
         "request": request,
