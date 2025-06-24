@@ -5,8 +5,6 @@ import os
 EMAIL_FROM = os.getenv("EMAIL_FROM")
 EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
 
-print("EMAIL_FROM:", EMAIL_FROM)
-print("EMAIL_PASSWORD:", EMAIL_PASSWORD)
 
 async def enviar_correo(destinatario: str, asunto: str, contenido: str):
     mensaje = EmailMessage()
