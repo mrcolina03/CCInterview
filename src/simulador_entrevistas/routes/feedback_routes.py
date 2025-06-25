@@ -155,47 +155,74 @@ async def mostrar_dashboard(request: Request):
     token = request.cookies.get("access_token")
     if not token:
         return RedirectResponse(url="/auth/login")
-
     from auth.auth import decode_token
     payload = decode_token(token)
     if not payload:
         return RedirectResponse(url="/auth/login")
-
     usuario_id = payload.get("sub")
     print("Payload del token:", payload)
-
     try:
         usuario_obj_id = ObjectId(usuario_id)
     except Exception:
         usuario_obj_id = usuario_id
-
     entrevistas = await db["entrevistas"].find({"usuario_id": usuario_obj_id}).to_list(length=None)
-
     print(f"Entrevistas encontradas para usuario {usuario_id}: {len(entrevistas)}")
-
     entrevistas_con_detalles = []
+    
     for entrevista in entrevistas:
         entrevista_id = entrevista["_id"]
-
         preguntas = await db["preguntas"].find({"entrevista_id": entrevista_id}).to_list(length=None)
         respuestas = await db["respuestas"].find({"entrevista_id": entrevista_id}).to_list(length=None)
-
         print(f"Entrevista {entrevista_id} tiene {len(preguntas)} preguntas y {len(respuestas)} respuestas")
-
+        
         if not preguntas and not respuestas:
             continue  # Saltar entrevistas sin datos reales
-
+        
+        # Crear mapas para facilitar búsquedas
+        preguntas_map = {str(p["_id"]): p for p in preguntas}
+        
         total = len(preguntas)
         codigos = sum(1 for p in preguntas if p.get("tipo") == "codigo")
         tecnicas = sum(1 for p in preguntas if p.get("tipo") == "tecnica")
         blandas = sum(1 for p in preguntas if p.get("tipo") == "blanda")
-
-        puntajes_llm = [r["evaluacion_llm"]["puntaje"] for r in respuestas if r.get("evaluacion_llm")]
-        puntajes_audio = [r["puntaje_audio"] for r in respuestas if r.get("puntaje_audio") is not None]
-
-        promedio_llm = sum(puntajes_llm) / len(puntajes_llm) if puntajes_llm else None
-        promedio_audio = sum(puntajes_audio) / len(puntajes_audio) if puntajes_audio else None
-
+        
+        # Calcular promedios por tipo de pregunta
+        puntajes_codigo = []
+        puntajes_tecnica = []
+        puntajes_blanda = []
+        
+        for respuesta in respuestas:
+            pregunta_id = str(respuesta.get("pregunta_id"))
+            pregunta = preguntas_map.get(pregunta_id)
+            
+            if not pregunta:
+                continue
+                
+            tipo_pregunta = pregunta.get("tipo")
+            
+            # Obtener puntaje según el tipo de evaluación
+            puntaje = None
+            if respuesta.get("evaluacion_llm"):
+                puntaje = respuesta["evaluacion_llm"].get("puntaje")
+            elif respuesta.get("puntaje_audio") is not None:
+                puntaje = respuesta["puntaje_audio"]
+            elif respuesta.get("feedback"):
+                puntaje = respuesta["feedback"].get("puntuacion")
+            
+            # Clasificar por tipo de pregunta
+            if puntaje is not None:
+                if tipo_pregunta == "codigo":
+                    puntajes_codigo.append(puntaje)
+                elif tipo_pregunta == "tecnica":
+                    puntajes_tecnica.append(puntaje)
+                elif tipo_pregunta == "blanda":
+                    puntajes_blanda.append(puntaje)
+        
+        # Calcular promedios
+        promedio_codigo = round(sum(puntajes_codigo) / len(puntajes_codigo), 1) if puntajes_codigo else "N/A"
+        promedio_tecnica = round(sum(puntajes_tecnica) / len(puntajes_tecnica), 1) if puntajes_tecnica else "N/A"
+        promedio_blanda = round(sum(puntajes_blanda) / len(puntajes_blanda), 1) if puntajes_blanda else "N/A"
+        
         entrevistas_con_detalles.append({
             "_id": str(entrevista_id),
             "fecha": entrevista.get("fecha_inicio").strftime("%Y-%m-%d %H:%M") if entrevista.get("fecha_inicio") else "Sin fecha",
@@ -204,14 +231,15 @@ async def mostrar_dashboard(request: Request):
             "tecnica": tecnicas,
             "blanda": blandas,
             "estado": entrevista.get("estado", "desconocido"),
-            "promedio_llm": round(promedio_llm, 1) if promedio_llm else "N/A",
-            "promedio_audio": round(promedio_audio, 1) if promedio_audio else "N/A"
+            "promedio_codigo": promedio_codigo,
+            "promedio_tecnica": promedio_tecnica,
+            "promedio_blanda": promedio_blanda
         })
-
+    
     print("Entrevistas con detalles:", entrevistas_con_detalles)
-
     return templates.TemplateResponse("dashboard.html", {
         "request": request,
         "usuario": payload,
         "entrevistas": entrevistas_con_detalles
     })
+
