@@ -1,14 +1,86 @@
-<h2>Login</h2>
-<form method="post" action="/auth/login">
-    <input name="email" type="email" placeholder="Correo electrónico"><br>
-    <input name="password" type="password" placeholder="Contraseña"><br>
-    <button type="submit">Iniciar sesión</button>
-</form>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Mi Aplicación</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='css/estilos.css') }}">
+</head>
+<body>
+    <div class="login-container">
+        <!-- Sección izquierda - Hero Tech -->
+        <div class="hero-section bg-gradient">
+            <div class="grid-pattern"></div>
+            <div class="floating-elements">
+                <div class="floating-dot" style="left: 30%; top: 30%;"></div>
+                <div class="floating-dot"></div>
+                <div class="floating-dot"></div>
+                <div class="floating-dot"></div>
+            </div>
+            
+            <div class="hero-content">
+                <div class="hero-logo">M</div>
+                <h1 class="text-4xl font-semibold text-primary mb-3">Bienvenido a</h1>
+                <h2 class="text-5xl font-light text-gradient-animated mb-4">Mi Aplicación</h2>
+                <p class="text-lg text-secondary">
+                    Plataforma moderna para desarrolladores. 
+                    Conecta, aprende y construye el futuro de la tecnología.
+                </p>
+            </div>
+        </div>
 
-<p>¿No tienes cuenta? <a href="/auth/register">Regístrate aquí</a></p>
+        <!-- Sección derecha - Formulario -->
+        <div class="form-section">
+            <div class="" style="width: 100%; max-width: 420px; padding: 3rem;">
+                <div class="card-header">
+                    <h2 class="text-2xl font-semibold text-primary mb-2">¡Bienvenido de vuelta!</h2>
+                    <p class="text-secondary">Ingresa tus credenciales para continuar</p>
+                </div>
 
-{% if error %}
-    <p style="color: red;">{{ error }}</p>
+                <!-- Mensaje de error (Jinja2) -->
+                {% if error %}
+                <div class="alert alert-error mb-4">
+                    {{ error }}
+                </div>
+                {% endif %}
+
+                <form method="post" action="/auth/login">
+                    <div class="form-group">
+                        <input 
+                            name="email" 
+                            type="email" 
+                            class="form-input" 
+                            placeholder="Correo electrónico" 
+                            required
+                            autocomplete="email"
+                        >
+                    </div>
+                    
+                    <div class="form-group">
+                        <input 
+                            name="password" 
+                            type="password" 
+                            class="form-input" 
+                            placeholder="Contraseña" 
+                            required
+                            autocomplete="current-password"
+                        >
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary btn-full mb-5">
+                        Iniciar sesión
+                    </button>
+                </form>
+
+                <div class="card-footer">
+                    <p class="text-secondary mb-3">¿No tienes cuenta? <a href="/auth/register" class="link link-animated">Regístrate aquí</a></p>
+                    <p><a href="/auth/recuperar" class="link link-animated">¿Olvidaste tu contraseña?</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+{% if mensaje %}
+    <p style="color: red;">{{ mensaje }}</p>
 {% endif %}
-
-<p>¿Olvidaste tu contraseña? <a href="/auth/recuperar">Recuperar contraseña</a></p>
+</body>
+</html>
