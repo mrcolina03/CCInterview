@@ -43,6 +43,9 @@ async def index(request: Request, cv: Optional[str] = None, error: Optional[str]
     if cv == "error":
         mensaje = "Ha ocurrido un error. Vuelve a intentarlo"
         
+    if error == "no_cv":
+        mensaje = "No se ha encontrado un CV asociado a tu cuenta. Por favor, crea uno antes de continuar."
+        
     if error== "mongo":
         mensaje = "Error al conectar con la base de datos. Por favor, inténtalo más tarde."
     elif error == "unexpected":
