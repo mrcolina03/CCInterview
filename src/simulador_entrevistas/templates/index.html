@@ -335,7 +335,11 @@
                             autocomplete="current-password"
                         >
                     </div>
-                    
+                            {% if mensaje %}
+                                <div class="alert alert-error">
+                                    {{ mensaje }}
+                                </div>
+                            {% endif %}
                     <button type="submit" class="btn btn-primary btn-full mb-5">
                         Iniciar sesión
                     </button>
