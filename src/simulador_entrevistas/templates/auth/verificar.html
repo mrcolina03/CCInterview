@@ -1,10 +1,51 @@
-<h2>Revisa tu correo 📬</h2>
-<p>Te hemos enviado un enlace para verificar tu cuenta a {{ email }}.</p>
-<p>Revisa tu bandeja de entrada o spam.</p>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verificar correo - ccInterview</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='css/estilos.css') }}">
+</head>
+<body>
+    <div class="login-container">
+        <!-- Sección izquierda - Hero Tech -->
+        <div class="hero-section bg-gradient">
+            <div class="grid-pattern"></div>
+            <div class="floating-elements">
+                <div class="floating-dot" style="left: 30%; top: 30%;"></div>
+                <div class="floating-dot"></div>
+                <div class="floating-dot"></div>
+                <div class="floating-dot"></div>
+            </div>
+            
+            <div class="hero-content">
+                <div class="hero-logo">CC</div>
+                <h1 class="text-4xl font-semibold text-primary mb-3">Bienvenido a</h1>
+                <h2 class="text-5xl font-light text-gradient-animated mb-4">ccInterview</h2>
+                <p class="text-lg text-secondary">
+                    Plataforma moderna para entrevistas técnicas. 
+                    Conecta, practica y domina tus habilidades de programación.
+                </p>
+            </div>
+        </div>
 
+        <!-- Sección derecha - Contenido -->
+        <div class="form-section">
+            <div class="card card-accent" style="width: 100%; max-width: 420px; padding: 3rem;">
+                <div class="card-header">
+                    <h2 class="text-2xl font-semibold text-primary mb-4">Revisa tu correo 📬</h2>
+                    <p class="text-base text-secondary mb-3">Te hemos enviado un enlace para verificar tu cuenta a <strong class="text-primary">{{ email }}</strong>.</p>
+                    <p class="text-base text-secondary mb-5">Revisa tu bandeja de entrada o spam.</p>
+                </div>
 
-<p>¿No recibiste el correo? Puedes volver a intentarlo:</p>
-<form method="post" action="/auth/enviar-verificacion">
-    <input type="hidden" name="email" value="{{ email }}">
-    <button type="submit">Reenviar correo de verificación</button>
-</form>
+                <p class="text-base text-secondary mb-4">¿No recibiste el correo? Puedes volver a intentarlo:</p>
+                
+                <form method="post" action="/auth/enviar-verificacion">
+                    <input type="hidden" name="email" value="{{ email }}">
+                    <button type="submit" class="btn btn-primary btn-full">Reenviar correo de verificación</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
