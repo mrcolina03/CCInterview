@@ -171,6 +171,23 @@
             background: linear-gradient(135deg, var(--accent-green), var(--accent-blue));
         }
 
+        /* Mensaje global */
+        .global-message {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: var(--space-lg) var(--space-2xl) 0;
+        }
+
+        .global-message-login {
+            position: absolute;
+            top: var(--space-lg);
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            width: 90%;
+            max-width: 500px;
+        }
+
         /* Responsive */
         @media (max-width: 480px) {
             .top-bar {
@@ -196,6 +213,20 @@
             .dashboard-grid {
                 grid-template-columns: 1fr;
             }
+
+            .global-message {
+                padding: var(--space-md) var(--space-lg) 0;
+            }
+
+            .global-message-login {
+                position: fixed;
+                top: var(--space-md);
+                left: var(--space-sm);
+                right: var(--space-sm);
+                transform: none;
+                width: auto;
+                max-width: none;
+            }
         }
     </style>
 </head>
@@ -209,6 +240,15 @@
                 <a href="/logout" class="logout-btn">Cerrar sesión</a>
             </div>
         </div>
+
+        <!-- Mensaje global para usuarios logueados -->
+        {% if mensaje %}
+        <div class="global-message">
+            <div class="alert alert-error">
+                {{ mensaje }}
+            </div>
+        </div>
+        {% endif %}
 
         <div class="main-content">
             <div class="welcome-section">
@@ -276,6 +316,16 @@
     </div>
     {% else %}
     <!-- Página de Login completa para usuarios no autenticados -->
+    
+    <!-- Mensaje global para usuarios no logueados (posición superior) -->
+    {% if mensaje %}
+    <div class="global-message-login">
+        <div class="alert alert-error">
+            {{ mensaje }}
+        </div>
+    </div>
+    {% endif %}
+    
     <div class="login-container">
         <!-- Sección izquierda - Hero Tech -->
         <div class="hero-section bg-gradient">
@@ -306,7 +356,7 @@
                     <p class="text-secondary">Ingresa tus credenciales para continuar</p>
                 </div>
 
-                <!-- Mensaje de error (Jinja2) -->
+                <!-- Mensaje de error específico del login -->
                 {% if error %}
                 <div class="alert alert-error mb-4">
                     {{ error }}
@@ -335,11 +385,7 @@
                             autocomplete="current-password"
                         >
                     </div>
-                            {% if mensaje %}
-                                <div class="alert alert-error">
-                                    {{ mensaje }}
-                                </div>
-                            {% endif %}
+                    
                     <button type="submit" class="btn btn-primary btn-full mb-5">
                         Iniciar sesión
                     </button>
@@ -352,11 +398,6 @@
             </div>
         </div>
     </div>
-        {% if mensaje %}
-            <div class="alert alert-error">
-                {{ mensaje }}
-            </div>
-        {% endif %}
     {% endif %}
 </body>
 
