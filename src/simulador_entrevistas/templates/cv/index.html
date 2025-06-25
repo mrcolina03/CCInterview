@@ -1,43 +1,402 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <title>Perfil del Usuario</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CV de {{ cv.nombre }} - ccInterview</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='css/estilos.css') }}">
+    <style>
+        /* Estilos específicos para el perfil CV */
+        .cv-profile-container {
+            min-height: 100vh;
+            background: var(--bg-primary);
+            padding: var(--space-xl) var(--space-md);
+        }
+
+        .cv-profile-card {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cv-profile-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple), var(--accent-green));
+        }
+
+        .cv-header {
+            padding: var(--space-2xl);
+            text-align: center;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .cv-name {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: var(--space-sm);
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .cv-subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            font-weight: 400;
+        }
+
+        .cv-content {
+            padding: var(--space-2xl);
+        }
+
+        .cv-section {
+            margin-bottom: var(--space-2xl);
+        }
+
+        .cv-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            margin-bottom: var(--space-lg);
+            padding-bottom: var(--space-sm);
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .section-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            color: white;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        /* Habilidades técnicas */
+        .skills-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--space-md);
+        }
+
+        .skill-item {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: var(--space-md);
+            transition: all var(--transition);
+        }
+
+        .skill-item:hover {
+            border-color: var(--accent-blue);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .skill-label {
+            font-weight: 600;
+            color: var(--accent-blue);
+            margin-bottom: var(--space-xs);
+            font-size: 0.9rem;
+        }
+
+        .skill-value {
+            color: var(--text-primary);
+            font-size: 0.95rem;
+        }
+
+        /* Experiencia profesional */
+        .experience-item {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: var(--space-lg);
+            margin-bottom: var(--space-md);
+            position: relative;
+            transition: all var(--transition);
+        }
+
+        .experience-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(180deg, var(--accent-blue), var(--accent-purple));
+            border-radius: var(--radius-sm);
+        }
+
+        .experience-item:hover {
+            transform: translateX(4px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .experience-header {
+            margin-bottom: var(--space-md);
+        }
+
+        .experience-position {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: var(--space-xs);
+        }
+
+        .experience-company {
+            color: var(--accent-blue);
+            font-weight: 500;
+            margin-bottom: var(--space-xs);
+        }
+
+        .experience-duration {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            font-style: italic;
+        }
+
+        .experience-description {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        /* Items generales */
+        .item-list {
+            display: grid;
+            gap: var(--space-sm);
+        }
+
+        .list-item {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: var(--space-md);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all var(--transition);
+        }
+
+        .list-item:hover {
+            border-color: var(--accent-green);
+            background: rgba(0, 255, 136, 0.05);
+        }
+
+        .item-name {
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .item-detail {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Educación */
+        .education-item {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: var(--space-lg);
+            margin-bottom: var(--space-md);
+            position: relative;
+        }
+
+        .education-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: var(--accent-green);
+            border-radius: var(--radius-sm);
+        }
+
+        .education-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: var(--space-xs);
+        }
+
+        .education-institution {
+            color: var(--accent-green);
+            font-weight: 500;
+            margin-bottom: var(--space-xs);
+        }
+
+        .education-years {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            font-style: italic;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .cv-profile-container {
+                padding: var(--space-lg) var(--space-sm);
+            }
+
+            .cv-header,
+            .cv-content {
+                padding: var(--space-lg);
+            }
+
+            .cv-name {
+                font-size: 2rem;
+            }
+
+            .skills-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .section-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: var(--space-sm);
+            }
+        }
+    </style>
 </head>
 <body>
-    <h1>CV de {{ cv.nombre }}</h1>
+    <div class="cv-profile-container">
+        <div class="cv-profile-card">
+            <!-- Header del CV -->
+            <div class="cv-header">
+                <h1 class="cv-name">{{ cv.nombre }}</h1>
+                <p class="cv-subtitle">Perfil Profesional - ccInterview</p>
+            </div>
 
-    <h2>Habilidades Técnicas</h2>
-    <ul>
-        <li>Lenguajes: {{ cv.habilidades_tecnicas.lenguajes }}</li>
-        <li>Frameworks: {{ cv.habilidades_tecnicas.frameworks }}</li>
-        <li>Bases de Datos: {{ cv.habilidades_tecnicas.bases_datos }}</li>
-        <li>Herramientas: {{ cv.habilidades_tecnicas.herramientas }}</li>
-    </ul>
+            <!-- Contenido del CV -->
+            <div class="cv-content">
+                <!-- Habilidades Técnicas -->
+                <div class="cv-section">
+                    <div class="section-header">
+                        <div class="section-icon">⚡</div>
+                        <h2 class="section-title">Habilidades Técnicas</h2>
+                    </div>
+                    <div class="skills-grid">
+                        <div class="skill-item">
+                            <div class="skill-label">Lenguajes</div>
+                            <div class="skill-value">{{ cv.habilidades_tecnicas.lenguajes }}</div>
+                        </div>
+                        <div class="skill-item">
+                            <div class="skill-label">Frameworks</div>
+                            <div class="skill-value">{{ cv.habilidades_tecnicas.frameworks }}</div>
+                        </div>
+                        <div class="skill-item">
+                            <div class="skill-label">Bases de Datos</div>
+                            <div class="skill-value">{{ cv.habilidades_tecnicas.bases_datos }}</div>
+                        </div>
+                        <div class="skill-item">
+                            <div class="skill-label">Herramientas</div>
+                            <div class="skill-value">{{ cv.habilidades_tecnicas.herramientas }}</div>
+                        </div>
+                    </div>
+                </div>
 
-    <h2>Experiencia Profesional</h2>
-    {% for exp in cv.experiencia %}
-        <p><strong>{{ exp.puesto }}</strong> en {{ exp.empresa }} ({{ exp.duracion }})</p>
-        <p>{{ exp.descripcion }}</p>
-    {% endfor %}
+                <!-- Experiencia Profesional -->
+                <div class="cv-section">
+                    <div class="section-header">
+                        <div class="section-icon">💼</div>
+                        <h2 class="section-title">Experiencia Profesional</h2>
+                    </div>
+                    {% for exp in cv.experiencia %}
+                    <div class="experience-item">
+                        <div class="experience-header">
+                            <div class="experience-position">{{ exp.puesto }}</div>
+                            <div class="experience-company">{{ exp.empresa }}</div>
+                            <div class="experience-duration">{{ exp.duracion }}</div>
+                        </div>
+                        <div class="experience-description">{{ exp.descripcion }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
 
-    <h2>Certificaciones</h2>
-    {% for cert in cv.certificaciones %}
-        <p>{{ cert.nombre }} - {{ cert.emisor }}</p>
-    {% endfor %}
+                <!-- Certificaciones -->
+                <div class="cv-section">
+                    <div class="section-header">
+                        <div class="section-icon">🏆</div>
+                        <h2 class="section-title">Certificaciones</h2>
+                    </div>
+                    <div class="item-list">
+                        {% for cert in cv.certificaciones %}
+                        <div class="list-item">
+                            <span class="item-name">{{ cert.nombre }}</span>
+                            <span class="item-detail">{{ cert.emisor }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
 
-    <h2>Idiomas</h2>
-    {% for idioma in cv.idiomas %}
-        <p>{{ idioma.nombre }} ({{ idioma.nivel }})</p>
-    {% endfor %}
+                <!-- Idiomas -->
+                <div class="cv-section">
+                    <div class="section-header">
+                        <div class="section-icon">🌍</div>
+                        <h2 class="section-title">Idiomas</h2>
+                    </div>
+                    <div class="item-list">
+                        {% for idioma in cv.idiomas %}
+                        <div class="list-item">
+                            <span class="item-name">{{ idioma.nombre }}</span>
+                            <span class="item-detail">{{ idioma.nivel }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
 
-    <h2>Educación</h2>
-    <ul>
-        {% for edu in cv.estudios %}
-            <li>Institución: {{ edu.institucion }}</li>
-            <li>Título: {{ edu.titulo }}</li>
-            <li>Años: {{ edu.anios }}</li>
-            <br>
-        {% endfor %}
-    </ul>
+                <!-- Educación -->
+                <div class="cv-section">
+                    <div class="section-header">
+                        <div class="section-icon">🎓</div>
+                        <h2 class="section-title">Educación</h2>
+                    </div>
+                    {% for edu in cv.estudios %}
+                    <div class="education-item">
+                        <div class="education-title">{{ edu.titulo }}</div>
+                        <div class="education-institution">{{ edu.institucion }}</div>
+                        <div class="education-years">{{ edu.anios }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+            {%if mensaje%}
+                <p>{{ mensaje }}</p>
+            {% endif %}
+
+            <a href="/" class="back-btn">
+                <span>🏠</span>
+                <span>Regresar</span>
+            </a>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
