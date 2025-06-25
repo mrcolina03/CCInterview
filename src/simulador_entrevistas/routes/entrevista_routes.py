@@ -54,7 +54,7 @@ async def crear_entrevista(
     if not payload:
         return RedirectResponse(url="/auth/login")
     
-    cv = await db["curriculum"].find_one({"usuario_id": payload.get("sub")})
+    cv = await db["curriculum"].find_one({"usuario_id": ObjectId(payload.get("sub"))})
     if not cv:
         return RedirectResponse(url="/?error=no_cv", status_code=302)
 
