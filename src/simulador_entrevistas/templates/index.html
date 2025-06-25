@@ -349,7 +349,9 @@
         </div>
     </div>
         {% if mensaje %}
-            <p style="color: red;">{{ mensaje }}</p>
+            <div class="alert alert-error">
+                {{ mensaje }}
+            </div>
         {% endif %}
     {% endif %}
 </body>
