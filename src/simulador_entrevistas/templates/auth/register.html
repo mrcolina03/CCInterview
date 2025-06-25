@@ -1,6 +1,56 @@
-<h2>Registro</h2>
-<form method="post" action="/auth/register">
-    <input name="email" type="email" placeholder="Correo electrónico"><br>
-    <input name="password" type="password" placeholder="Contraseña"><br>
-    <button type="submit">Registrarse</button>
-</form>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro - ccInterview</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='css/estilos.css') }}">
+</head>
+<body>
+    <div class="login-container">
+        <!-- Sección izquierda - Hero Tech -->
+        <div class="hero-section bg-gradient">
+            <div class="grid-pattern"></div>
+            <div class="floating-elements">
+                <div class="floating-dot" style="left: 30%; top: 30%;"></div>
+                <div class="floating-dot"></div>
+                <div class="floating-dot"></div>
+                <div class="floating-dot"></div>
+            </div>
+            
+            <div class="hero-content">
+                <div class="hero-logo">M</div>
+                <h1 class="text-4xl font-semibold text-primary mb-3">Bienvenido a</h1>
+                <h2 class="text-5xl font-light text-gradient-animated mb-4">ccInterview</h2>
+                <p class="text-lg text-secondary">
+                    Plataforma moderna para entrevistas técnicas. 
+                    Conecta, practica y domina tus habilidades de programación.
+                </p>
+            </div>
+        </div>
+
+        <!-- Sección derecha - Formulario -->
+        <div class="form-section">
+            <div class="card card-accent" style="width: 100%; max-width: 420px; padding: 3rem;">
+                <div class="card-header">
+                    <h2 class="text-2xl font-semibold text-primary mb-2">Registro</h2>
+                </div>
+
+                <form method="post" action="/auth/register">
+                    <div class="form-group">
+                        <input name="email" type="email" class="form-input" placeholder="Correo electrónico">
+                    </div>
+                    
+                    <div class="form-group">
+                        <input name="password" type="password" class="form-input" placeholder="Contraseña">
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary btn-full">Registrarse</button>
+                </form>
+                <p class="text-secondary mb-3">¿Ya tienes cuenta? <a href="/auth/login" class="link link-animated">Inicia sesion aquí</a></p>
+            </div>
+            
+        </div>
+    </div>
+</body>
+</html>
