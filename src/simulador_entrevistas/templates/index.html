@@ -3,36 +3,355 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Inicio | Simulador de Entrevistas</title>
+    <title>Inicio | ccInterview</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='css/estilos.css') }}">
+    <style>
+        /* Estilos específicos para el dashboard */
+        .dashboard-container {
+            min-height: 100vh;
+            background: var(--bg-primary);
+        }
+
+        .top-bar {
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border-color);
+            padding: var(--space-lg) var(--space-xl);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: var(--space-md);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: var(--space-lg);
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .user-email {
+            color: var(--accent-blue);
+            font-weight: 500;
+        }
+
+        .logout-btn {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            padding: var(--space-sm) var(--space-md);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all var(--transition);
+        }
+
+        .logout-btn:hover {
+            border-color: var(--accent-blue);
+            background: var(--bg-primary);
+        }
+
+        .auth-links {
+            display: flex;
+            gap: var(--space-md);
+        }
+
+        .main-content {
+            padding: var(--space-2xl);
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .welcome-section {
+            text-align: center;
+            margin-bottom: var(--space-2xl);
+        }
+
+        .welcome-title {
+            font-size: 2.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: var(--space-md);
+        }
+
+        .welcome-subtitle {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            margin-bottom: var(--space-xl);
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: var(--space-lg);
+            margin-top: var(--space-xl);
+        }
+
+        .dashboard-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: var(--space-xl);
+            transition: all var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .dashboard-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--border-hover);
+        }
+
+        .card-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            border-radius: var(--radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: var(--space-md);
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: var(--space-sm);
+        }
+
+        .card-description {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-bottom: var(--space-lg);
+            line-height: 1.5;
+        }
+
+        .card-link {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-sm);
+            color: var(--accent-blue);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: all var(--transition);
+        }
+
+        .card-link:hover {
+            color: var(--accent-purple);
+            transform: translateX(4px);
+        }
+
+        .admin-section {
+            border: 2px solid var(--accent-green);
+            background: rgba(0, 255, 136, 0.05);
+        }
+
+        .admin-section::before {
+            background: var(--accent-green);
+        }
+
+        .admin-section .card-icon {
+            background: linear-gradient(135deg, var(--accent-green), var(--accent-blue));
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .top-bar {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: var(--space-sm);
+            }
+
+            .user-info {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: var(--space-sm);
+            }
+
+            .main-content {
+                padding: var(--space-lg);
+            }
+
+            .welcome-title {
+                font-size: 2rem;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 
 <body>
-    <div class="top-bar">
-        {% if user %}
-        <div><strong>Usuario:</strong> {{ user.email }}</div>
-        <a href="/logout">Cerrar sesión</a>
-        
-        {% if user.rol == 'admin' %}
-        <h1>Bienvenido al Simulador de Entrevistas</h1>
-        <a href="/config/admin">Panel de Administración</a>
-        <a href="/adaptabilidad/probar">Probar Creación de Habilidad</a>
-        <a href="/adaptabilidad/escoger">Escoger Habilidades/Subtemáticas</a>
-        <a href="/adaptabilidad/codigo">Probar identificación lenguajes compatibles</a>
-        {% else %}
-        <h1>Bienvenido al Simulador de Entrevistas</h1>
-        <a href="/cv/create">Llenar formulario de CV</a>
-        <a href="/cv/index">Mi CV</a>
-        <a href="/entrevista/nueva">Nueva Entrevista</a>
-        {% endif %}
+    {% if user %}
+    <div class="dashboard-container">
+        <div class="top-bar">
+            <div class="user-info">
+                <div><strong>Usuario:</strong> <span class="user-email">{{ user.email }}</span></div>
+                <a href="/logout" class="logout-btn">Cerrar sesión</a>
+            </div>
+        </div>
 
-        {% else %}
-        <a href="/auth/login">Iniciar sesión</a>
-        <a href="/auth/register">Registrarse</a>
-        {% endif %}
+        <div class="main-content">
+            <div class="welcome-section">
+                <h1 class="welcome-title">Bienvenido a ccInterview</h1>
+                <p class="welcome-subtitle">Tu plataforma completa para dominar las entrevistas técnicas</p>
+            </div>
+
+            {% if user.rol == 'admin' %}
+            <div class="dashboard-grid">
+                <div class="dashboard-card admin-section">
+                    <div class="card-icon">⚙️</div>
+                    <h3 class="card-title">Panel de Administración</h3>
+                    <p class="card-description">Gestiona usuarios, configuraciones y supervisa el sistema completo.</p>
+                    <a href="/config/admin" class="card-link">Acceder al panel →</a>
+                </div>
+
+                <div class="dashboard-card">
+                    <div class="card-icon">🧠</div>
+                    <h3 class="card-title">Creación de Habilidades</h3>
+                    <p class="card-description">Prueba y crea nuevas habilidades para las entrevistas técnicas.</p>
+                    <a href="/adaptabilidad/probar" class="card-link">Probar creación →</a>
+                </div>
+
+                <div class="dashboard-card">
+                    <div class="card-icon">🎯</div>
+                    <h3 class="card-title">Gestión de Habilidades</h3>
+                    <p class="card-description">Administra habilidades existentes y sus subtemáticas.</p>
+                    <a href="/adaptabilidad/escoger" class="card-link">Gestionar →</a>
+                </div>
+
+                <div class="dashboard-card">
+                    <div class="card-icon">💻</div>
+                    <h3 class="card-title">Lenguajes de Programación</h3>
+                    <p class="card-description">Prueba la identificación de lenguajes compatibles.</p>
+                    <a href="/adaptabilidad/codigo" class="card-link">Probar identificación →</a>
+                </div>
+            </div>
+            {% else %}
+            <div class="dashboard-grid">
+                <div class="dashboard-card">
+                    <div class="card-icon">📄</div>
+                    <h3 class="card-title">Mi Currículum</h3>
+                    <p class="card-description">Crea y gestiona tu CV para las entrevistas técnicas.</p>
+                    <a href="/cv/create" class="card-link">Llenar formulario →</a>
+                    <br><br>
+                    <a href="/cv/index" class="card-link">Ver mi CV →</a>
+                </div>
+
+                <div class="dashboard-card">
+                    <div class="card-icon">🎤</div>
+                    <h3 class="card-title">Nueva Entrevista</h3>
+                    <p class="card-description">Inicia una nueva sesión de entrevista técnica personalizada.</p>
+                    <a href="/entrevista/nueva" class="card-link">Comenzar entrevista →</a>
+                </div>
+
+                <div class="dashboard-card">
+                    <div class="card-icon">📊</div>
+                    <h3 class="card-title">Historial y Feedback</h3>
+                    <p class="card-description">Revisa tus entrevistas anteriores y el feedback recibido.</p>
+                    <a href="/feedback/dashboard" class="card-link">Ver historial →</a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
     </div>
+    {% else %}
+    <!-- Página de Login completa para usuarios no autenticados -->
+    <div class="login-container">
+        <!-- Sección izquierda - Hero Tech -->
+        <div class="hero-section bg-gradient">
+            <div class="grid-pattern"></div>
+            <div class="floating-elements">
+                <div class="floating-dot" style="left: 30%; top: 30%;"></div>
+                <div class="floating-dot"></div>
+                <div class="floating-dot"></div>
+                <div class="floating-dot"></div>
+            </div>
+            
+            <div class="hero-content">
+                <div class="hero-logo">CC</div>
+                <h1 class="text-4xl font-semibold text-primary mb-3">Bienvenido a</h1>
+                <h2 class="text-5xl font-light text-gradient-animated mb-4">ccInterview</h2>
+                <p class="text-lg text-secondary">
+                    Plataforma moderna para entrevistas técnicas. 
+                    Conecta, practica y domina tus habilidades de programación.
+                </p>
+            </div>
+        </div>
 
-    
+        <!-- Sección derecha - Formulario -->
+        <div class="form-section">
+            <div class="card card-accent" style="width: 100%; max-width: 420px; padding: 3rem;">
+                <div class="card-header">
+                    <h2 class="text-2xl font-semibold text-primary mb-2">¡Bienvenido de vuelta!</h2>
+                    <p class="text-secondary">Ingresa tus credenciales para continuar</p>
+                </div>
 
+                <!-- Mensaje de error (Jinja2) -->
+                {% if error %}
+                <div class="alert alert-error mb-4">
+                    {{ error }}
+                </div>
+                {% endif %}
+
+                <form method="post" action="/auth/login">
+                    <div class="form-group">
+                        <input 
+                            name="email" 
+                            type="email" 
+                            class="form-input" 
+                            placeholder="Correo electrónico" 
+                            required
+                            autocomplete="email"
+                        >
+                    </div>
+                    
+                    <div class="form-group">
+                        <input 
+                            name="password" 
+                            type="password" 
+                            class="form-input" 
+                            placeholder="Contraseña" 
+                            required
+                            autocomplete="current-password"
+                        >
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary btn-full mb-5">
+                        Iniciar sesión
+                    </button>
+                </form>
+
+                <div class="card-footer">
+                    <p class="text-secondary mb-3">¿No tienes cuenta? <a href="/auth/register" class="link link-animated">Regístrate aquí</a></p>
+                    <p><a href="/auth/recuperar" class="link link-animated">¿Olvidaste tu contraseña?</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+        {% if mensaje %}
+            <p style="color: red;">{{ mensaje }}</p>
+        {% endif %}
+    {% endif %}
 </body>
 
 </html>
