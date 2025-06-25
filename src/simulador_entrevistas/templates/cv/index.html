@@ -39,6 +39,37 @@
             text-align: center;
             background: var(--bg-secondary);
             border-bottom: 1px solid var(--border-color);
+            position: relative;
+        }
+
+        .home-button-top {
+            position: absolute;
+            top: var(--space-lg);
+            left: var(--space-lg);
+            background: var(--bg-card);
+            color: var(--accent-blue);
+            border: 2px solid var(--accent-blue);
+            border-radius: var(--radius);
+            padding: var(--space-sm) var(--space-md);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: all var(--transition);
+            display: flex;
+            align-items: center;
+            gap: var(--space-xs);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .home-button-top:hover {
+            background: var(--accent-blue);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .home-button-top:active {
+            transform: translateY(0);
         }
 
         .cv-name {
@@ -269,6 +300,19 @@
                 padding: var(--space-lg);
             }
 
+            .cv-header {
+                padding-top: var(--space-2xl);
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .home-button-top {
+                position: static;
+                margin-bottom: var(--space-lg);
+                align-self: flex-start;
+            }
+
             .cv-name {
                 font-size: 2rem;
             }
@@ -331,6 +375,10 @@
         <div class="cv-profile-card">
             <!-- Header del CV -->
             <div class="cv-header">
+                <a href="/" class="home-button-top">
+                    <span>🏠</span>
+                    <span>Inicio</span>
+                </a>
                 <h1 class="cv-name">{{ cv.nombre }}</h1>
                 <p class="cv-subtitle">Perfil Profesional - ccInterview</p>
             </div>
