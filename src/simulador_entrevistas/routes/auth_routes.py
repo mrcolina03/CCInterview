@@ -1,3 +1,4 @@
+from typing import Optional
 from pymongo.errors import ConfigurationError, ServerSelectionTimeoutError
 from datetime import timedelta
 from urllib.parse import urlencode
@@ -139,8 +140,11 @@ async def cambiar_password(token: str = Form(...), nueva_password: str = Form(..
 
 
 @router.get("/login", response_class=HTMLResponse)
-async def login_form(request: Request):
-    return templates.TemplateResponse("login.html", {"request": request})
+async def login_form(request: Request, error: Optional[str] = None):
+    mensaje = None
+    if error == "invalid":
+        mensaje = "Correo o contraseña incorrectos."
+    return templates.TemplateResponse("login.html", {"request": request, "mensaje": mensaje})
 
 @router.post("/login")
 async def login_user(request: Request, email: str = Form(...), password: str = Form(...)):
@@ -154,7 +158,7 @@ async def login_user(request: Request, email: str = Form(...), password: str = F
 
     
     if not user or not verify_password(password, user["password_hash"]):
-        raise HTTPException(status_code=401, detail="Credenciales inválidas.")
+        return RedirectResponse(url="/auth/login?error=invalid", status_code=303)
 
     if not user.get("verificado"):
         return templates.TemplateResponse("reenviar_verificacion.html", {
