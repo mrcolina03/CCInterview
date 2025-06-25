@@ -283,9 +283,50 @@
                 gap: var(--space-sm);
             }
         }
+
+        /* Mensaje global para CV */
+        .global-message-cv {
+            position: fixed;
+            top: var(--space-lg);
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            width: 90%;
+            max-width: 600px;
+        }
+
+        /* Botón de regreso */
+        .back-btn-section {
+            text-align: center;
+            margin-top: var(--space-xl);
+            padding-top: var(--space-lg);
+            border-top: 1px solid var(--border-color);
+        }
+
+        /* Responsive para mensaje en CV */
+        @media (max-width: 768px) {
+            .global-message-cv {
+                position: fixed;
+                top: var(--space-md);
+                left: var(--space-sm);
+                right: var(--space-sm);
+                transform: none;
+                width: auto;
+                max-width: none;
+            }
+        }
     </style>
 </head>
 <body>
+    <!-- Mensaje global (posición superior) -->
+    {% if mensaje %}
+    <div class="global-message-cv">
+        <div class="alert alert-error">
+            {{ mensaje }}
+        </div>
+    </div>
+    {% endif %}
+
     <div class="cv-profile-container">
         <div class="cv-profile-card">
             <!-- Header del CV -->
@@ -386,15 +427,6 @@
                     </div>
                     {% endfor %}
                 </div>
-
-            {%if mensaje%}
-                <p>{{ mensaje }}</p>
-            {% endif %}
-
-            <a href="/" class="back-btn">
-                <span>🏠</span>
-                <span>Regresar</span>
-            </a>
             </div>
         </div>
     </div>
