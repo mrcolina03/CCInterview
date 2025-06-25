@@ -1,2 +1,43 @@
-<h2>Correo enviado</h2>
-<p>Se ha enviado un enlace a <strong>{{ email }}</strong>. Por favor revisa tu bandeja de entrada.</p>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Correo enviado - Mi Aplicación</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='css/estilos.css') }}">
+</head>
+<body>
+    <div class="login-container">
+        <!-- Sección izquierda - Hero Tech -->
+        <div class="hero-section bg-gradient">
+            <div class="grid-pattern"></div>
+            <div class="floating-elements">
+                <div class="floating-dot" style="left: 30%; top: 30%;"></div>
+                <div class="floating-dot"></div>
+                <div class="floating-dot"></div>
+                <div class="floating-dot"></div>
+            </div>
+            
+            <div class="hero-content">
+                <div class="hero-logo">M</div>
+                <h1 class="text-4xl font-semibold text-primary mb-3">Bienvenido a</h1>
+                <h2 class="text-5xl font-light text-gradient-animated mb-4">Mi Aplicación</h2>
+                <p class="text-lg text-secondary">
+                    Plataforma moderna para desarrolladores. 
+                    Conecta, aprende y construye el futuro de la tecnología.
+                </p>
+            </div>
+        </div>
+
+        <!-- Sección derecha - Mensaje -->
+        <div class="form-section">
+            <div class="card card-accent" style="width: 100%; max-width: 420px; padding: 3rem;">
+                <div class="card-header">
+                    <h2 class="text-2xl font-semibold text-primary mb-4">Correo enviado</h2>
+                    <p class="text-base text-secondary">Se ha enviado un enlace a <strong class="text-primary">{{ email }}</strong>. Por favor revisa tu bandeja de entrada.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
