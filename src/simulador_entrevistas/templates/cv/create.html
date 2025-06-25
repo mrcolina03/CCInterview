@@ -1,11 +1,208 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Formulario de CV para Desarrollador</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulario de CV - ccInterview</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='css/estilos.css') }}">
     <style>
-        label { font-weight: bold; }
-        .section { margin-bottom: 20px; padding: 10px; border: 1px solid #ccc; }
+        /* Estilos específicos para el formulario CV */
+        .cv-container {
+            min-height: 100vh;
+            background: var(--bg-primary);
+            padding: var(--space-xl) var(--space-md);
+        }
+
+        .cv-header {
+            text-align: center;
+            margin-bottom: var(--space-2xl);
+        }
+
+        .cv-title {
+            font-size: 2.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: var(--space-sm);
+        }
+
+        .cv-subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .cv-form {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: var(--space-2xl);
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cv-form::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
+        }
+
+        .cv-section {
+            margin-bottom: var(--space-xl);
+            padding: var(--space-lg);
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            position: relative;
+        }
+
+        .cv-section-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: var(--space-lg);
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .section-icon {
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+        }
+
+        .dynamic-section {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: var(--space-lg);
+            margin-bottom: var(--space-md);
+            position: relative;
+        }
+
+        .dynamic-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 3px;
+            height: 100%;
+            background: var(--accent-green);
+            border-radius: var(--radius-sm);
+        }
+
+        .add-button {
+            background: var(--bg-primary);
+            color: var(--accent-blue);
+            border: 2px dashed var(--accent-blue);
+            border-radius: var(--radius);
+            padding: var(--space-md) var(--space-lg);
+            cursor: pointer;
+            transition: all var(--transition);
+            font-weight: 500;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-sm);
+        }
+
+        .add-button:hover {
+            background: rgba(0, 212, 255, 0.1);
+            border-color: var(--accent-purple);
+            color: var(--accent-purple);
+            transform: translateY(-2px);
+        }
+
+        .cv-form .form-input {
+            margin-bottom: var(--space-md);
+        }
+
+        .cv-form textarea.form-input {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .submit-section {
+            text-align: center;
+            margin-top: var(--space-2xl);
+            padding-top: var(--space-xl);
+            border-top: 1px solid var(--border-color);
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            color: white;
+            border: none;
+            border-radius: var(--radius);
+            padding: var(--space-lg) var(--space-2xl);
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .submit-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left var(--transition-slow);
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .submit-btn:hover::before {
+            left: 100%;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-md);
+        }
+
+        .form-row-full {
+            grid-column: 1 / -1;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .cv-container {
+                padding: var(--space-lg) var(--space-sm);
+            }
+
+            .cv-form {
+                padding: var(--space-lg);
+            }
+
+            .cv-title {
+                font-size: 2rem;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
     <script>
         function addSection(sectionId, templateId) {
@@ -17,83 +214,143 @@
     </script>
 </head>
 <body>
-    <h1>Formulario de CV</h1>
-    <form action="/cv/submit" method="post">
-
-        <div class="section">
-            <label>Nombre completo:</label><br>
-            <input type="text" name="nombre" required><br>
+    <div class="cv-container">
+        <div class="cv-header">
+            <h1 class="cv-title">Formulario de CV</h1>
+            <p class="cv-subtitle">Completa tu información profesional para ccInterview</p>
         </div>
 
-        <!-- EXPERIENCIA -->
-        <div class="section">
-            <label>Experiencia profesional:</label>
-            <div id="experienciaContainer"></div>
-            <button type="button" onclick="addSection('experienciaContainer', 'experienciaTemplate')">+ Añadir experiencia</button>
-        </div>
-
-        <template id="experienciaTemplate">
-            <div class="section">
-                <input type="text" name="exp_puesto" placeholder="Puesto" required><br>
-                <input type="text" name="exp_empresa" placeholder="Empresa" required><br>
-                <input type="text" name="exp_duracion" placeholder="Duración (ej: Ene 2020 - Dic 2022)" required><br>
-                <textarea name="exp_descripcion" placeholder="Descripción de responsabilidades y logros" required></textarea><br>
+        <form class="cv-form" action="/cv/submit" method="post">
+            <!-- INFORMACIÓN PERSONAL -->
+            <div class="cv-section">
+                <h2 class="cv-section-title">
+                    <span class="section-icon">👤</span>
+                    Información Personal
+                </h2>
+                <div class="form-group">
+                    <input type="text" name="nombre" class="form-input" placeholder="Nombre completo" required>
+                </div>
             </div>
-        </template>
 
-        <!-- CERTIFICACIONES -->
-        <div class="section">
-            <label>Certificaciones:</label>
-            <div id="certificacionesContainer"></div>
-            <button type="button" onclick="addSection('certificacionesContainer', 'certificacionTemplate')">+ Añadir certificación</button>
-        </div>
-
-        <template id="certificacionTemplate">
-            <div class="section">
-                <input type="text" name="cert_nombre" placeholder="Nombre de certificación"><br>
-                <input type="text" name="cert_emisor" placeholder="Emitido por"><br>
+            <!-- EXPERIENCIA PROFESIONAL -->
+            <div class="cv-section">
+                <h2 class="cv-section-title">
+                    <span class="section-icon">💼</span>
+                    Experiencia Profesional
+                </h2>
+                <div id="experienciaContainer"></div>
+                <button type="button" class="add-button" onclick="addSection('experienciaContainer', 'experienciaTemplate')">
+                    <span>+</span> Añadir experiencia
+                </button>
             </div>
-        </template>
 
-        <!-- IDIOMAS -->
-        <div class="section">
-            <label>Idiomas:</label>
-            <div id="idiomasContainer"></div>
-            <button type="button" onclick="addSection('idiomasContainer', 'idiomaTemplate')">+ Añadir idioma</button>
-        </div>
+            <template id="experienciaTemplate">
+                <div class="dynamic-section">
+                    <div class="form-row">
+                        <input type="text" name="exp_puesto" class="form-input" placeholder="Puesto" required>
+                        <input type="text" name="exp_empresa" class="form-input" placeholder="Empresa" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" name="exp_duracion" class="form-input" placeholder="Duración (ej: Ene 2020 - Dic 2022)" required>
+                    </div>
+                    <div class="form-group">
+                        <textarea name="exp_descripcion" class="form-input" placeholder="Descripción de responsabilidades y logros" required></textarea>
+                    </div>
+                </div>
+            </template>
 
-        <template id="idiomaTemplate">
-            <div class="section">
-                <input type="text" name="idioma_nombre" placeholder="Idioma"><br>
-                <input type="text" name="idioma_nivel" placeholder="Nivel (ej: Intermedio, Avanzado, Nativo)">
+            <!-- CERTIFICACIONES -->
+            <div class="cv-section">
+                <h2 class="cv-section-title">
+                    <span class="section-icon">🏆</span>
+                    Certificaciones
+                </h2>
+                <div id="certificacionesContainer"></div>
+                <button type="button" class="add-button" onclick="addSection('certificacionesContainer', 'certificacionTemplate')">
+                    <span>+</span> Añadir certificación
+                </button>
             </div>
-        </template>
 
-        <!-- HABILIDADES TÉCNICAS -->
-        <div class="section">
-            <label>Habilidades técnicas:</label><br>
-            <input type="text" name="lenguajes" placeholder="Lenguajes de programación (ej: Python, JavaScript)" required><br>
-            <input type="text" name="frameworks" placeholder="Frameworks (ej: React, Django)"><br>
-            <input type="text" name="bases_datos" placeholder="Bases de datos (ej: PostgreSQL, MongoDB)"><br>
-            <input type="text" name="herramientas" placeholder="Herramientas (ej: Git, Docker, VSCode)">
-        </div>
+            <template id="certificacionTemplate">
+                <div class="dynamic-section">
+                    <div class="form-row">
+                        <input type="text" name="cert_nombre" class="form-input" placeholder="Nombre de certificación">
+                        <input type="text" name="cert_emisor" class="form-input" placeholder="Emitido por">
+                    </div>
+                </div>
+            </template>
 
-        <!-- ESTUDIOS -->
-        <div class="section">
-            <label>Estudios:</label>
-            <div id="estudiosContainer"></div>
-            <button type="button" onclick="addSection('estudiosContainer', 'estudioTemplate')">+ Añadir estudio</button>
-        </div>
-
-        <template id="estudioTemplate">
-            <div class="section">
-                <input type="text" name="estudio_institucion" placeholder="Institución" required><br>
-                <input type="text" name="estudio_titulo" placeholder="Título obtenido" required><br>
-                <input type="text" name="estudio_anios" placeholder="Años (ej: 2018 - 2022)" required><br>
+            <!-- IDIOMAS -->
+            <div class="cv-section">
+                <h2 class="cv-section-title">
+                    <span class="section-icon">🌍</span>
+                    Idiomas
+                </h2>
+                <div id="idiomasContainer"></div>
+                <button type="button" class="add-button" onclick="addSection('idiomasContainer', 'idiomaTemplate')">
+                    <span>+</span> Añadir idioma
+                </button>
             </div>
-        </template>
 
-        <input type="submit" value="Enviar">
-    </form>
+            <template id="idiomaTemplate">
+                <div class="dynamic-section">
+                    <div class="form-row">
+                        <input type="text" name="idioma_nombre" class="form-input" placeholder="Idioma">
+                        <input type="text" name="idioma_nivel" class="form-input" placeholder="Nivel (ej: Intermedio, Avanzado, Nativo)">
+                    </div>
+                </div>
+            </template>
+
+            <!-- HABILIDADES TÉCNICAS -->
+            <div class="cv-section">
+                <h2 class="cv-section-title">
+                    <span class="section-icon">⚡</span>
+                    Habilidades Técnicas
+                </h2>
+                <div class="form-group">
+                    <input type="text" name="lenguajes" class="form-input" placeholder="Lenguajes de programación (ej: Python, JavaScript)" required>
+                </div>
+                <div class="form-group">
+                    <input type="text" name="frameworks" class="form-input" placeholder="Frameworks (ej: React, Django)">
+                </div>
+                <div class="form-group">
+                    <input type="text" name="bases_datos" class="form-input" placeholder="Bases de datos (ej: PostgreSQL, MongoDB)">
+                </div>
+                <div class="form-group">
+                    <input type="text" name="herramientas" class="form-input" placeholder="Herramientas (ej: Git, Docker, VSCode)">
+                </div>
+            </div>
+
+            <!-- ESTUDIOS -->
+            <div class="cv-section">
+                <h2 class="cv-section-title">
+                    <span class="section-icon">🎓</span>
+                    Estudios
+                </h2>
+                <div id="estudiosContainer"></div>
+                <button type="button" class="add-button" onclick="addSection('estudiosContainer', 'estudioTemplate')">
+                    <span>+</span> Añadir estudio
+                </button>
+            </div>
+
+            <template id="estudioTemplate">
+                <div class="dynamic-section">
+                    <div class="form-row">
+                        <input type="text" name="estudio_institucion" class="form-input" placeholder="Institución" required>
+                        <input type="text" name="estudio_titulo" class="form-input" placeholder="Título obtenido" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" name="estudio_anios" class="form-input" placeholder="Años (ej: 2018 - 2022)" required>
+                    </div>
+                </div>
+            </template>
+
+            <div class="submit-section">
+                <button type="submit" class="submit-btn">
+                    Guardar CV
+                </button>
+            </div>
+        </form>
+    </div>
 </body>
 </html>
