@@ -72,8 +72,7 @@ from fastapi import Form
 async def enviar_verificacion_manual(request: Request, email: str = Form(...)):
     user = await db["usuarios"].find_one({"email": email})
     if not user:
-        raise HTTPException(status_code=404, detail="Usuario no encontrado.")
-
+        return RedirectResponse("/auth/register", status_code=303)
     if user.get("verificado"):
         return RedirectResponse("/auth/login", status_code=303)
 
@@ -91,14 +90,17 @@ async def enviar_verificacion_manual(request: Request, email: str = Form(...)):
     return templates.TemplateResponse("verificar.html", {"request": request, "email": email})
 
 @router.get("/recuperar", response_class=HTMLResponse)
-async def mostrar_formulario_recuperar(request: Request):
-    return templates.TemplateResponse("recuperar.html", {"request": request})
+async def mostrar_formulario_recuperar(request: Request, error: Optional[str] = None):
+    mensaje = None
+    if error == "no_registered":
+        mensaje = "El correo electrónico no está registrado."
+    return templates.TemplateResponse("recuperar.html", {"request": request, "mensaje": mensaje})
 
 @router.post("/recuperar")
 async def enviar_token_recuperacion(request: Request, email: str = Form(...)):
     user = await db["usuarios"].find_one({"email": email})
     if not user:
-        raise HTTPException(status_code=404, detail="Correo no registrado")
+        return RedirectResponse("/auth/recuperar?error=no_registered", status_code=303)
 
     token = create_access_token({"sub": str(user["_id"])}, expires_delta=timedelta(hours=1))
 
