@@ -1,24 +1,327 @@
-<!-- templates/cv/confirmacion_cv.html -->
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Confirmación de reemplazo de CV</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmación de reemplazo de CV - ccInterview</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='css/estilos.css') }}">
+    <style>
+        /* Estilos específicos para confirmación de CV */
+        .confirmation-container {
+            min-height: 100vh;
+            background: var(--bg-primary);
+            padding: var(--space-xl) var(--space-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .confirmation-card {
+            width: 100%;
+            max-width: 600px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: var(--space-2xl);
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .confirmation-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--warning-color), var(--error-color));
+        }
+
+        .warning-header {
+            text-align: center;
+            margin-bottom: var(--space-2xl);
+        }
+
+        .warning-icon {
+            font-size: 4rem;
+            margin-bottom: var(--space-lg);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.05); }
+        }
+
+        .warning-title {
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--warning-color);
+            margin-bottom: var(--space-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-sm);
+        }
+
+        .warning-subtitle {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        .warning-message {
+            background: rgba(255, 165, 2, 0.1);
+            border: 1px solid var(--warning-color);
+            border-radius: var(--radius);
+            padding: var(--space-lg);
+            margin-bottom: var(--space-2xl);
+            position: relative;
+        }
+
+        .warning-message::before {
+            content: '⚠️';
+            position: absolute;
+            top: var(--space-md);
+            left: var(--space-md);
+            font-size: 1.2rem;
+        }
+
+        .warning-text {
+            color: var(--text-primary);
+            font-size: 1.1rem;
+            line-height: 1.6;
+            padding-left: var(--space-2xl);
+            font-weight: 500;
+        }
+
+        .consequences-section {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: var(--space-lg);
+            margin-bottom: var(--space-2xl);
+        }
+
+        .consequences-title {
+            font-weight: 600;
+            color: var(--error-color);
+            margin-bottom: var(--space-md);
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .consequences-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .consequence-item {
+            display: flex;
+            align-items: flex-start;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-sm);
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .consequence-item::before {
+            content: '❌';
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .form-section {
+            margin-top: var(--space-xl);
+        }
+
+        .confirmation-form {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-md);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: var(--space-md);
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .confirm-btn {
+            padding: var(--space-lg) var(--space-xl);
+            background: linear-gradient(135deg, var(--error-color), #d63031);
+            color: white;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            min-width: 200px;
+            justify-content: center;
+        }
+
+        .confirm-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left var(--transition-slow);
+        }
+
+        .confirm-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .confirm-btn:hover::before {
+            left: 100%;
+        }
+
+        .confirm-btn:active {
+            transform: translateY(0);
+        }
+
+        .cancel-btn {
+            padding: var(--space-lg) var(--space-xl);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            min-width: 200px;
+            justify-content: center;
+        }
+
+        .cancel-btn:hover {
+            border-color: var(--accent-blue);
+            background: var(--bg-primary);
+            color: var(--accent-blue);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .safety-note {
+            text-align: center;
+            margin-top: var(--space-lg);
+            padding: var(--space-md);
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid var(--accent-blue);
+            border-radius: var(--radius);
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .confirmation-container {
+                padding: var(--space-lg) var(--space-sm);
+                align-items: flex-start;
+                padding-top: var(--space-2xl);
+            }
+
+            .confirmation-card {
+                padding: var(--space-xl);
+            }
+
+            .warning-title {
+                font-size: 1.75rem;
+                flex-direction: column;
+                gap: var(--space-xs);
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .confirm-btn,
+            .cancel-btn {
+                width: 100%;
+            }
+        }
+    </style>
 </head>
 <body>
-    <h2>⚠️ Ya tienes un CV registrado</h2>
-    <p>Al continuar, se eliminará tu CV y perfil anterior y se reiniciará tu progreso en las entrevistas.</p>
-    <form action="/cv/confirmar" method="post">
-        {% for key, value in form_data.items() %}
-            {% if value is iterable and not value|string %}
-                {% for item in value %}
-                    <input type="hidden" name="{{ key }}" value="{{ item }}">
-                {% endfor %}
-            {% else %}
-                <input type="hidden" name="{{ key }}" value="{{ value }}">
-            {% endif %}
-        {% endfor %}
-        <input type="submit" value="Sí, reemplazar CV y reiniciar progreso">
-    </form>
+    <div class="confirmation-container">
+        <div class="confirmation-card">
+            <div class="warning-header">
+                <div class="warning-icon">⚠️</div>
+                <h2 class="warning-title">
+                    <span>Ya tienes un CV registrado</span>
+                </h2>
+                <p class="warning-subtitle">Esta acción tendrá consecuencias importantes en tu perfil</p>
+            </div>
+
+            <div class="warning-message">
+                <p class="warning-text">
+                    Al continuar, se eliminará tu CV y perfil anterior y se reiniciará tu progreso en las entrevistas.
+                </p>
+            </div>
+
+            <div class="consequences-section">
+                <h3 class="consequences-title">
+                    <span>🗑️</span>
+                    <span>Esto eliminará permanentemente:</span>
+                </h3>
+                <ul class="consequences-list">
+                    <li class="consequence-item">Tu CV actual y toda la información profesional</li>
+                    <li class="consequence-item">Historial completo de entrevistas realizadas</li>
+                    <li class="consequence-item">Puntuaciones y evaluaciones anteriores</li>
+                    <li class="consequence-item">Progreso y estadísticas acumuladas</li>
+                    <li class="consequence-item">Feedback y recomendaciones recibidas</li>
+                </ul>
+            </div>
+
+            <div class="form-section">
+                <form class="confirmation-form" action="/cv/confirmar" method="post">
+                    {% for key, value in form_data.items() %}
+                        {% if value is iterable and not value|string %}
+                            {% for item in value %}
+                                <input type="hidden" name="{{ key }}" value="{{ item }}">
+                            {% endfor %}
+                        {% else %}
+                            <input type="hidden" name="{{ key }}" value="{{ value }}">
+                        {% endif %}
+                    {% endfor %}
+
+                    <div class="action-buttons">
+                        <a href="/cv/index" class="cancel-btn">
+                            <span>🚫</span>
+                            <span>Cancelar</span>
+                        </a>
+                        <button type="submit" class="confirm-btn">
+                            <span>🔄</span>
+                            <span>Sí, reemplazar CV y reiniciar</span>
+                        </button>
+                    </div>
+                </form>
+
+                <div class="safety-note">
+                    💡 <strong>Consejo:</strong> Si solo quieres actualizar información específica, 
+                    considera editar tu CV actual en lugar de reemplazarlo completamente.
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
