@@ -1,223 +1,615 @@
-{% block content %}
-{% if terminada %}
-<h2>✅ Entrevista finalizada</h2>
-<a href="/">Volver al inicio</a>
-{% else %}
-<h2>Pregunta</h2>
-<div class="card">
-  <p><strong>{{ pregunta.tipo|capitalize }}:</strong> {{ pregunta.pregunta }}</p>
-</div>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entrevista en Progreso - ccInterview</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='css/estilos.css') }}">
+    <style>
+        /* Estilos específicos para la entrevista */
+        .interview-container {
+            min-height: 100vh;
+            background: var(--bg-primary);
+            padding: var(--space-lg) var(--space-md);
+        }
 
-<form method="post" action="/entrevista/responder/{{ entrevista_id }}">
-  <input type="hidden" name="pregunta_id" value="{{ pregunta._id }}">
+        .interview-card {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
 
-  {% if pregunta.tipo == "codigo" %}
-  <label for="lenguaje">Lenguaje:</label>
-  <select id="lenguaje" name="lenguaje" required>
-    {% for lang in plantillas %}
-    <option value="{{ lang }}">{{ lang|capitalize }}</option>
-    {% endfor %}
-  </select> 
+        .interview-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple), var(--accent-green));
+        }
 
-  <div id="editor" style="height: 300px; border: 1px solid #ccc;"></div>
-  <textarea id="respuesta" name="respuesta" style="display:none;"></textarea>
+        /* Estado finalizado */
+        .completed-section {
+            text-align: center;
+            padding: var(--space-2xl);
+        }
 
-  <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.34.1/min/vs/loader.js"></script>
-  <script>
-  const plantillas = {{ plantillas_json | safe }};
-  require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.34.1/min/vs' } });
-  require(['vs/editor/editor.main'], function () {
-    const selector = document.getElementById('lenguaje');
-    const langActual = selector.value;
-    const contenidoInicial = plantillas[langActual] || '';
+        .completed-title {
+            font-size: 2.5rem;
+            font-weight: 600;
+            color: var(--success-color);
+            margin-bottom: var(--space-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-sm);
+        }
 
-    window.editor = monaco.editor.create(document.getElementById('editor'), {
-      value: contenidoInicial,
-      language: langActual,
-      theme: 'vs-dark'
-    });
+        .back-home-btn {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            color: white;
+            padding: var(--space-md) var(--space-xl);
+            border-radius: var(--radius);
+            text-decoration: none;
+            font-weight: 600;
+            transition: all var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
 
-    document.querySelector('form').addEventListener('submit', function () {
-      document.getElementById('respuesta').value = window.editor.getValue();
-    });
+        .back-home-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
 
-    selector.addEventListener('change', function () {
-      const nuevoLenguaje = this.value;
-      const nuevaPlantilla = plantillas[nuevoLenguaje] || '';
-      monaco.editor.setModelLanguage(window.editor.getModel(), nuevoLenguaje);
-      window.editor.setValue(nuevaPlantilla);
-    });
-  });
-</script>
-<button type="submit">Enviar respuesta</button>
+        /* Header de pregunta */
+        .question-header {
+            padding: var(--space-xl);
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+        }
 
-  {% else %}
+        .question-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: var(--space-md);
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
 
+        .question-card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: var(--space-lg);
+            position: relative;
+        }
 
-  <label for="respuesta">Tu respuesta:</label><br><br><br><br>
-  <button type="button" id="leer">🔊 Escuchar pregunta</button>
-  <button type="button" id="iniciar">🎙️ Iniciar grabación</button>
-  <button type="button" id="detener" style="display:none;">⏹️ Detener grabación</button>
-  <button type="submit" id="enviar" disabled>Enviar respuesta</button>
+        .question-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: var(--accent-blue);
+            border-radius: var(--radius-sm);
+        }
 
-  <audio id="preview" controls></audio>
-  <input type="hidden" name="audio_data" id="audio_data">
+        .question-type {
+            color: var(--accent-blue);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 0.5px;
+            margin-bottom: var(--space-sm);
+        }
 
- <script>
-    const textoPregunta = "{{ pregunta.pregunta }}";
-    const synth = window.speechSynthesis;
+        .question-text {
+            color: var(--text-primary);
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin: 0;
+        }
 
-    // Función para limpiar el texto antes de la síntesis de voz
-    function limpiarTextoParaVoz(texto) {
-        return texto
-            // Eliminar comillas simples y dobles
-            .replace(/['"''""]/g, '')
-            // Eliminar caracteres especiales problemáticos
-            .replace(/[#@$%&*]/g, '')
-            // Reemplazar guiones por espacios para mejor pronunciación
-            .replace(/[-_]/g, ' ')
-            // Limpiar espacios múltiples
-            .replace(/\s+/g, ' ')
-            // Eliminar espacios al inicio y final
-            .trim();
-    }
+        /* Sección de respuesta */
+        .response-section {
+            padding: var(--space-xl);
+        }
 
-    function hablarPregunta() {
-        // Limpiar el texto antes de crear la utterance
-        const textoLimpio = limpiarTextoParaVoz(textoPregunta);
-        
-        const utterance = new SpeechSynthesisUtterance(textoLimpio);
-        utterance.lang = "es-ES";
-        
-        const voces = synth.getVoices();
-        const vozEsp = voces.find(v => v.lang.startsWith("es"));
-        if (vozEsp) utterance.voice = vozEsp;
-        
-        synth.cancel();
-        synth.speak(utterance);
-    }
+        .response-form {
+            max-width: 100%;
+        }
 
-    if (synth.getVoices().length === 0) {
-        synth.onvoiceschanged = hablarPregunta;
-    } else {
-        hablarPregunta();
-    }
+        /* Editor de código */
+        .code-section {
+            margin-bottom: var(--space-xl);
+        }
 
-    document.getElementById("leer").addEventListener("click", hablarPregunta);
+        .language-selector {
+            margin-bottom: var(--space-lg);
+        }
 
-    let mediaRecorder;
-    let audioChunks = [];
-    let audioContext;
-    let recordingStream;
+        .language-label {
+            display: block;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: var(--space-sm);
+            font-size: 1rem;
+        }
 
-    const btnIniciar = document.getElementById("iniciar");
-    const btnDetener = document.getElementById("detener");
-    const preview = document.getElementById("preview");
-    const audioDataInput = document.getElementById("audio_data");
+        .language-select {
+            width: 200px;
+            padding: var(--space-sm) var(--space-md);
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius);
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all var(--transition);
+            cursor: pointer;
+        }
 
-    function encodeWAV(samples, sampleRate) {
-        const buffer = new ArrayBuffer(44 + samples.length * 2);
-        const view = new DataView(buffer);
-        const writeString = (offset, string) => {
-            for (let i = 0; i < string.length; i++) {
-                view.setUint8(offset + i, string.charCodeAt(i));
+        .language-select:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+        }
+
+        .editor-container {
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius);
+            overflow: hidden;
+            margin-bottom: var(--space-lg);
+            transition: all var(--transition);
+        }
+
+        .editor-container:focus-within {
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+        }
+
+        #editor {
+            height: 400px;
+        }
+
+        /* Sección de audio */
+        .audio-section {
+            margin-bottom: var(--space-xl);
+        }
+
+        .audio-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-md);
+            margin-bottom: var(--space-lg);
+        }
+
+        .audio-btn {
+            padding: var(--space-md) var(--space-lg);
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all var(--transition);
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            font-size: 0.95rem;
+        }
+
+        .audio-btn:hover {
+            border-color: var(--accent-blue);
+            background: var(--bg-primary);
+            transform: translateY(-1px);
+        }
+
+        .audio-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-listen {
+            border-color: var(--accent-green);
+            color: var(--accent-green);
+        }
+
+        .btn-listen:hover {
+            background: rgba(0, 255, 136, 0.1);
+            border-color: var(--accent-green);
+        }
+
+        .btn-record {
+            border-color: var(--accent-blue);
+            color: var(--accent-blue);
+        }
+
+        .btn-record:hover {
+            background: rgba(0, 212, 255, 0.1);
+            border-color: var(--accent-blue);
+        }
+
+        .btn-stop {
+            border-color: var(--error-color);
+            color: var(--error-color);
+        }
+
+        .btn-stop:hover {
+            background: rgba(255, 71, 87, 0.1);
+            border-color: var(--error-color);
+        }
+
+        .audio-preview {
+            width: 100%;
+            margin-top: var(--space-md);
+            border-radius: var(--radius);
+            background: var(--bg-secondary);
+        }
+
+        /* Botón de envío */
+        .submit-section {
+            text-align: center;
+            padding-top: var(--space-lg);
+            border-top: 1px solid var(--border-color);
+            margin-top: var(--space-xl);
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            color: white;
+            border: none;
+            border-radius: var(--radius);
+            padding: var(--space-lg) var(--space-2xl);
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition);
+            position: relative;
+            overflow: hidden;
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .submit-btn:disabled {
+            background: var(--bg-secondary);
+            color: var(--text-muted);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .submit-btn:not(:disabled)::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left var(--transition-slow);
+        }
+
+        .submit-btn:not(:disabled):hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .submit-btn:not(:disabled):hover::before {
+            left: 100%;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .interview-container {
+                padding: var(--space-md) var(--space-sm);
             }
-        };
-        writeString(0, 'RIFF');
-        view.setUint32(4, 36 + samples.length * 2, true);
-        writeString(8, 'WAVE');
-        writeString(12, 'fmt ');
-        view.setUint32(16, 16, true);
-        view.setUint16(20, 1, true);
-        view.setUint16(22, 1, true);
-        view.setUint32(24, sampleRate, true);
-        view.setUint32(28, sampleRate * 2, true);
-        view.setUint16(32, 2, true);
-        view.setUint16(34, 16, true);
-        writeString(36, 'data');
-        view.setUint32(40, samples.length * 2, true);
 
-        let offset = 44;
-        for (let i = 0; i < samples.length; i++, offset += 2) {
-            const s = Math.max(-1, Math.min(1, samples[i]));
-            view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+            .question-header,
+            .response-section {
+                padding: var(--space-lg);
+            }
+
+            .question-title {
+                font-size: 1.3rem;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: var(--space-xs);
+            }
+
+            .audio-controls {
+                flex-direction: column;
+            }
+
+            .audio-btn {
+                justify-content: center;
+            }
+
+            .language-select {
+                width: 100%;
+            }
+
+            #editor {
+                height: 300px;
+            }
         }
+    </style>
+</head>
+<body>
+    <div class="interview-container">
+        <div class="interview-card">
+            {% if terminada %}
+                <div class="completed-section">
+                    <h2 class="completed-title">
+                        <span>✅</span>
+                        <span>Entrevista finalizada</span>
+                    </h2>
+                    <a href="/" class="back-home-btn">
+                        <span>🏠</span>
+                        <span>Volver al inicio</span>
+                    </a>
+                </div>
+            {% else %}
+                <div class="question-header">
+                    <h2 class="question-title">
+                        <span>❓</span>
+                        <span>Pregunta</span>
+                    </h2>
+                    <div class="question-card">
+                        <div class="question-type">{{ pregunta.tipo|capitalize }}:</div>
+                        <p class="question-text">{{ pregunta.pregunta }}</p>
+                    </div>
+                </div>
 
-        return buffer;
-    }
+                <div class="response-section">
+                    <form method="post" action="/entrevista/responder/{{ entrevista_id }}" class="response-form">
+                        <input type="hidden" name="pregunta_id" value="{{ pregunta._id }}">
 
-    btnIniciar.onclick = async () => {
-        audioChunks = [];
-        try {
-            recordingStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 44100 });
-            const source = audioContext.createMediaStreamSource(recordingStream);
-            const processor = audioContext.createScriptProcessor(4096, 1, 1);
-            const recordedSamples = [];
+                        {% if pregunta.tipo == "codigo" %}
+                            <div class="code-section">
+                                <div class="language-selector">
+                                    <label for="lenguaje" class="language-label">💻 Lenguaje:</label>
+                                    <select id="lenguaje" name="lenguaje" class="language-select" required>
+                                        {% for lang in plantillas %}
+                                        <option value="{{ lang }}">{{ lang|capitalize }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
 
-            processor.onaudioprocess = (e) => {
-                const inputData = e.inputBuffer.getChannelData(0);
-                recordedSamples.push(new Float32Array(inputData));
-            };
+                                <div class="editor-container">
+                                    <div id="editor"></div>
+                                </div>
+                                <textarea id="respuesta" name="respuesta" style="display:none;"></textarea>
 
-            source.connect(processor);
-            processor.connect(audioContext.destination);
+                                <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.34.1/min/vs/loader.js"></script>
+                                <script>
+                                const plantillas = {{ plantillas_json | safe }};
+                                require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.34.1/min/vs' } });
+                                require(['vs/editor/editor.main'], function () {
+                                    const selector = document.getElementById('lenguaje');
+                                    const langActual = selector.value;
+                                    const contenidoInicial = plantillas[langActual] || '';
 
-            mediaRecorder = new MediaRecorder(recordingStream);
-            mediaRecorder.ondataavailable = e => {
-                if (e.data.size > 0) {
-                    audioChunks.push(e.data);
-                }
-            };
+                                    window.editor = monaco.editor.create(document.getElementById('editor'), {
+                                        value: contenidoInicial,
+                                        language: langActual,
+                                        theme: 'vs-dark'
+                                    });
 
-            mediaRecorder.onstop = async () => {
-                processor.disconnect();
-                source.disconnect();
-                if (audioContext.state !== 'closed') await audioContext.close();
-                recordingStream.getTracks().forEach(track => track.stop());
+                                    document.querySelector('form').addEventListener('submit', function () {
+                                        document.getElementById('respuesta').value = window.editor.getValue();
+                                    });
 
-                const totalLength = recordedSamples.reduce((acc, chunk) => acc + chunk.length, 0);
-                const combinedSamples = new Float32Array(totalLength);
-                let offset = 0;
-                recordedSamples.forEach(chunk => {
-                    combinedSamples.set(chunk, offset);
-                    offset += chunk.length;
-                });
+                                    selector.addEventListener('change', function () {
+                                        const nuevoLenguaje = this.value;
+                                        const nuevaPlantilla = plantillas[nuevoLenguaje] || '';
+                                        monaco.editor.setModelLanguage(window.editor.getModel(), nuevoLenguaje);
+                                        window.editor.setValue(nuevaPlantilla);
+                                    });
+                                });
+                                </script>
+                            </div>
+                        {% else %}
+                            <div class="audio-section">
+                                <div class="audio-controls">
+                                    <button type="button" id="leer" class="audio-btn btn-listen">
+                                        <span>🔊</span>
+                                        <span>Escuchar pregunta</span>
+                                    </button>
+                                    <button type="button" id="iniciar" class="audio-btn btn-record">
+                                        <span>🎙️</span>
+                                        <span>Iniciar grabación</span>
+                                    </button>
+                                    <button type="button" id="detener" class="audio-btn btn-stop" style="display:none;">
+                                        <span>⏹️</span>
+                                        <span>Detener grabación</span>
+                                    </button>
+                                </div>
 
-                const wavBuffer = encodeWAV(combinedSamples, 44100);
-                const finalBlob = new Blob([wavBuffer], { type: 'audio/wav' });
-                const audioUrl = URL.createObjectURL(finalBlob);
-                preview.src = audioUrl;
+                                <audio id="preview" class="audio-preview" controls></audio>
+                                <input type="hidden" name="audio_data" id="audio_data">
 
-                const reader = new FileReader();
-                reader.readAsDataURL(finalBlob);
-                reader.onloadend = () => {
-                    audioDataInput.value = reader.result;
-                };
-                document.getElementById("enviar").disabled = false;
-            };
+                                <script>
+                                const textoPregunta = "{{ pregunta.pregunta }}";
+                                const synth = window.speechSynthesis;
 
-            mediaRecorder.start();
-            btnIniciar.style.display = "none";
-            btnDetener.style.display = "inline-block";
-        } catch (err) {
-            console.error('Error detallado:', err);
-            alert("Error al acceder al micrófono: " + err.message);
-        }
-    };
+                                // Función para limpiar el texto antes de la síntesis de voz
+                                function limpiarTextoParaVoz(texto) {
+                                    return texto
+                                        // Eliminar comillas simples, dobles y variantes Unicode
+                                        .replace(/['"`“”‘’«»]/g, '')
+                                        // Eliminar caracteres especiales problemáticos
+                                        .replace(/[#@$%&*]/g, '')
+                                        // Reemplazar guiones y guiones bajos por espacios
+                                        .replace(/[-_]/g, ' ')
+                                        // Reemplazar múltiples espacios por uno solo
+                                        .replace(/\s+/g, ' ')
+                                        // Eliminar espacios al inicio y final
+                                        .replace(/39/g, '')
+                                        .replace(/34/g, '')
+                                        .replace(/;/g, '')
+                                        .trim();
+                                }
 
-    btnDetener.onclick = () => {
-        if (mediaRecorder && mediaRecorder.state === "recording") {
-            mediaRecorder.stop();
-            btnDetener.style.display = "none";
-            btnIniciar.style.display = "inline-block";
-        }
-    };
-</script>
-  {% endif %}
+                                function hablarPregunta() {
+                                    // Limpiar el texto antes de crear la utterance
+                                    const textoLimpio = limpiarTextoParaVoz(textoPregunta);
 
-  <br><br>
-  
-</form>
-{% endif %}
-{% endblock %}
+                                    console.log("Texto limpio para voz:", textoLimpio);
+                                    
+                                    const utterance = new SpeechSynthesisUtterance(textoLimpio);
+                                    utterance.lang = "es-ES";
+                                    
+                                    const voces = synth.getVoices();
+                                    const vozEsp = voces.find(v => v.lang.startsWith("es"));
+                                    if (vozEsp) utterance.voice = vozEsp;
+                                    
+                                    synth.cancel();
+                                    synth.speak(utterance);
+                                }
+
+                                if (synth.getVoices().length === 0) {
+                                    synth.onvoiceschanged = hablarPregunta;
+                                } else {
+                                    hablarPregunta();
+                                }
+
+                                document.getElementById("leer").addEventListener("click", hablarPregunta);
+
+                                let mediaRecorder;
+                                let audioChunks = [];
+                                let audioContext;
+                                let recordingStream;
+
+                                const btnIniciar = document.getElementById("iniciar");
+                                const btnDetener = document.getElementById("detener");
+                                const preview = document.getElementById("preview");
+                                const audioDataInput = document.getElementById("audio_data");
+
+                                function encodeWAV(samples, sampleRate) {
+                                    const buffer = new ArrayBuffer(44 + samples.length * 2);
+                                    const view = new DataView(buffer);
+                                    const writeString = (offset, string) => {
+                                        for (let i = 0; i < string.length; i++) {
+                                            view.setUint8(offset + i, string.charCodeAt(i));
+                                        }
+                                    };
+                                    writeString(0, 'RIFF');
+                                    view.setUint32(4, 36 + samples.length * 2, true);
+                                    writeString(8, 'WAVE');
+                                    writeString(12, 'fmt ');
+                                    view.setUint32(16, 16, true);
+                                    view.setUint16(20, 1, true);
+                                    view.setUint16(22, 1, true);
+                                    view.setUint32(24, sampleRate, true);
+                                    view.setUint32(28, sampleRate * 2, true);
+                                    view.setUint16(32, 2, true);
+                                    view.setUint16(34, 16, true);
+                                    writeString(36, 'data');
+                                    view.setUint32(40, samples.length * 2, true);
+
+                                    let offset = 44;
+                                    for (let i = 0; i < samples.length; i++, offset += 2) {
+                                        const s = Math.max(-1, Math.min(1, samples[i]));
+                                        view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+                                    }
+
+                                    return buffer;
+                                }
+
+                                btnIniciar.onclick = async () => {
+                                    audioChunks = [];
+                                    try {
+                                        recordingStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                                        audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 44100 });
+                                        const source = audioContext.createMediaStreamSource(recordingStream);
+                                        const processor = audioContext.createScriptProcessor(4096, 1, 1);
+                                        const recordedSamples = [];
+
+                                        processor.onaudioprocess = (e) => {
+                                            const inputData = e.inputBuffer.getChannelData(0);
+                                            recordedSamples.push(new Float32Array(inputData));
+                                        };
+
+                                        source.connect(processor);
+                                        processor.connect(audioContext.destination);
+
+                                        mediaRecorder = new MediaRecorder(recordingStream);
+                                        mediaRecorder.ondataavailable = e => {
+                                            if (e.data.size > 0) {
+                                                audioChunks.push(e.data);
+                                            }
+                                        };
+
+                                        mediaRecorder.onstop = async () => {
+                                            processor.disconnect();
+                                            source.disconnect();
+                                            if (audioContext.state !== 'closed') await audioContext.close();
+                                            recordingStream.getTracks().forEach(track => track.stop());
+
+                                            const totalLength = recordedSamples.reduce((acc, chunk) => acc + chunk.length, 0);
+                                            const combinedSamples = new Float32Array(totalLength);
+                                            let offset = 0;
+                                            recordedSamples.forEach(chunk => {
+                                                combinedSamples.set(chunk, offset);
+                                                offset += chunk.length;
+                                            });
+
+                                            const wavBuffer = encodeWAV(combinedSamples, 44100);
+                                            const finalBlob = new Blob([wavBuffer], { type: 'audio/wav' });
+                                            const audioUrl = URL.createObjectURL(finalBlob);
+                                            preview.src = audioUrl;
+
+                                            const reader = new FileReader();
+                                            reader.readAsDataURL(finalBlob);
+                                            reader.onloadend = () => {
+                                                audioDataInput.value = reader.result;
+                                            };
+                                            document.getElementById("enviar").disabled = false;
+                                        };
+
+                                        mediaRecorder.start();
+                                        btnIniciar.style.display = "none";
+                                        btnDetener.style.display = "inline-block";
+                                    } catch (err) {
+                                        console.error('Error detallado:', err);
+                                        alert("Error al acceder al micrófono: " + err.message);
+                                    }
+                                };
+
+                                btnDetener.onclick = () => {
+                                    if (mediaRecorder && mediaRecorder.state === "recording") {
+                                        mediaRecorder.stop();
+                                        btnDetener.style.display = "none";
+                                        btnIniciar.style.display = "inline-block";
+                                    }
+                                };
+                                </script>
+                            </div>
+                        {% endif %}
+
+                        <div class="submit-section">
+                            <button type="submit" id="enviar" class="submit-btn" {% if pregunta.tipo != "codigo" %}disabled{% endif %}>
+                                <span>📤</span>
+                                <span>Enviar respuesta</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>
