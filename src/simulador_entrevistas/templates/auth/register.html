@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cuenta verificada - ccInterview</title>
+    <title>Registro - ccInterview</title>
     <link rel="stylesheet" href="{{ url_for('static', path='css/estilos.css') }}">
 </head>
 <body>
@@ -19,7 +19,7 @@
             </div>
             
             <div class="hero-content">
-                <div class="hero-logo">CC</div>
+                <div class="hero-logo">M</div>
                 <h1 class="text-4xl font-semibold text-primary mb-3">Bienvenido a</h1>
                 <h2 class="text-5xl font-light text-gradient-animated mb-4">ccInterview</h2>
                 <p class="text-lg text-secondary">
@@ -29,16 +29,27 @@
             </div>
         </div>
 
-        <!-- Sección derecha - Contenido -->
+        <!-- Sección derecha - Formulario -->
         <div class="form-section">
             <div class="card card-accent" style="width: 100%; max-width: 420px; padding: 3rem;">
                 <div class="card-header">
-                    <h2 class="text-2xl font-semibold text-primary mb-4">✅ Cuenta verificada</h2>
-                    <p class="text-base text-secondary mb-5">Tu correo ha sido verificado exitosamente. Ya puedes iniciar sesión.</p>
+                    <h2 class="text-2xl font-semibold text-primary mb-2">Registro</h2>
                 </div>
 
-                <a href="/auth/login" class="btn btn-primary btn-full">Ir al login</a>
+                <form method="post" action="/auth/register">
+                    <div class="form-group">
+                        <input name="email" type="email" class="form-input" placeholder="Correo electrónico">
+                    </div>
+                    
+                    <div class="form-group">
+                        <input name="password" type="password" class="form-input" placeholder="Contraseña">
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary btn-full">Registrarse</button>
+                </form>
+                <p class="text-secondary mb-3">¿Ya tienes cuenta? <a href="/auth/login" class="link link-animated">Inicia sesion aquí</a></p>
             </div>
+            
         </div>
     </div>
 </body>
