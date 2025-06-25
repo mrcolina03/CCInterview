@@ -3,10 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Mi Aplicación</title>
+    <title>Login - ccInterview</title>
     <link rel="stylesheet" href="{{ url_for('static', path='css/estilos.css') }}">
+    <style>
+        /* Mensaje global para login independiente */
+        .global-message-login {
+            position: absolute;
+            top: var(--space-lg);
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            width: 90%;
+            max-width: 500px;
+        }
+
+        /* Responsive para mensaje en login */
+        @media (max-width: 768px) {
+            .global-message-login {
+                position: fixed;
+                top: var(--space-md);
+                left: var(--space-sm);
+                right: var(--space-sm);
+                transform: none;
+                width: auto;
+                max-width: none;
+            }
+        }
+    </style>
 </head>
 <body>
+    <!-- Mensaje global (posición superior) -->
+    {% if mensaje %}
+    <div class="global-message-login">
+        <div class="alert alert-error">
+            {{ mensaje }}
+        </div>
+    </div>
+    {% endif %}
+
     <div class="login-container">
         <!-- Sección izquierda - Hero Tech -->
         <div class="hero-section bg-gradient">
@@ -19,25 +53,25 @@
             </div>
             
             <div class="hero-content">
-                <div class="hero-logo">M</div>
+                <div class="hero-logo">CC</div>
                 <h1 class="text-4xl font-semibold text-primary mb-3">Bienvenido a</h1>
-                <h2 class="text-5xl font-light text-gradient-animated mb-4">Mi Aplicación</h2>
+                <h2 class="text-5xl font-light text-gradient-animated mb-4">ccInterview</h2>
                 <p class="text-lg text-secondary">
-                    Plataforma moderna para desarrolladores. 
-                    Conecta, aprende y construye el futuro de la tecnología.
+                    Plataforma moderna para entrevistas técnicas. 
+                    Conecta, practica y domina tus habilidades de programación.
                 </p>
             </div>
         </div>
 
         <!-- Sección derecha - Formulario -->
         <div class="form-section">
-            <div class="" style="width: 100%; max-width: 420px; padding: 3rem;">
+            <div class="card card-accent" style="width: 100%; max-width: 420px; padding: 3rem;">
                 <div class="card-header">
                     <h2 class="text-2xl font-semibold text-primary mb-2">¡Bienvenido de vuelta!</h2>
                     <p class="text-secondary">Ingresa tus credenciales para continuar</p>
                 </div>
 
-                <!-- Mensaje de error (Jinja2) -->
+                <!-- Mensaje de error específico del login -->
                 {% if error %}
                 <div class="alert alert-error mb-4">
                     {{ error }}
@@ -79,8 +113,5 @@
             </div>
         </div>
     </div>
-{% if mensaje %}
-    <p style="color: red;">{{ mensaje }}</p>
-{% endif %}
 </body>
 </html>
