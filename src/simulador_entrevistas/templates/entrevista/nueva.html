@@ -1,23 +1,258 @@
-{% block content %}
-<h2>Crear nueva entrevista</h2>
-<form method="post" action="/entrevista/nueva" class="form">
-  <label for="duracion">Duración de la entrevista:</label>
-  <select name="duracion" id="duracion" required>
-    {% for clave, valores in config.items() if clave != "_id" %}
-      <option value="{{ clave }}">
-        Entrevista {{ clave }} ({{ valores.minutos }} min)
-      </option>
-    {% endfor %}
-  </select>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nueva Entrevista - ccInterview</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='css/estilos.css') }}">
+    <style>
+        /* Estilos específicos para nueva entrevista */
+        .new-interview-container {
+            min-height: 100vh;
+            background: var(--bg-primary);
+            padding: var(--space-xl) var(--space-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 
-  <label for="modo">Modo de entrevista:</label>
-  <select name="modo" id="modo" required>
-    <option value="mixto">Mixto (técnica y blanda)</option>
-    <option value="solo tecnica">Solo técnica</option>
-    <option value="solo blanda">Solo blanda</option>
-    <option value="codigo">Código</option>
-  </select>
+        .interview-form-card {
+            width: 100%;
+            max-width: 500px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: var(--space-2xl);
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
 
-  <button type="submit">Comenzar entrevista</button>
-</form>
-{% endblock %}
+        .interview-form-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple), var(--accent-green));
+        }
+
+        .form-header {
+            text-align: center;
+            margin-bottom: var(--space-2xl);
+        }
+
+        .form-title {
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: var(--space-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-sm);
+        }
+
+        .form-subtitle {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        .form-section {
+            margin-bottom: var(--space-xl);
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: var(--space-sm);
+            font-size: 1rem;
+        }
+
+        .form-select {
+            width: 100%;
+            padding: var(--space-md) var(--space-lg);
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius);
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            font-weight: 400;
+            transition: all var(--transition);
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300d4ff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right var(--space-md) center;
+            background-size: 16px;
+            padding-right: calc(var(--space-lg) + 24px);
+        }
+
+        .form-select:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            background: var(--bg-primary);
+            box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .form-select:hover {
+            border-color: var(--border-hover);
+        }
+
+        .form-select option {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            padding: var(--space-sm);
+        }
+
+        .start-interview-btn {
+            width: 100%;
+            padding: var(--space-lg) var(--space-xl);
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            color: white;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition);
+            position: relative;
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+            margin-top: var(--space-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-sm);
+        }
+
+        .start-interview-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left var(--transition-slow);
+        }
+
+        .start-interview-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .start-interview-btn:hover::before {
+            left: 100%;
+        }
+
+        .start-interview-btn:active {
+            transform: translateY(-1px);
+        }
+
+        /* Indicadores visuales para las opciones */
+        .duration-info {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: var(--space-sm) var(--space-md);
+            margin-top: var(--space-sm);
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .mode-info {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: var(--space-sm) var(--space-md);
+            margin-top: var(--space-sm);
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .info-icon {
+            color: var(--accent-blue);
+            font-weight: 600;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .new-interview-container {
+                padding: var(--space-lg) var(--space-sm);
+                align-items: flex-start;
+                padding-top: var(--space-2xl);
+            }
+
+            .interview-form-card {
+                padding: var(--space-xl);
+            }
+
+            .form-title {
+                font-size: 1.75rem;
+                flex-direction: column;
+                gap: var(--space-xs);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="new-interview-container">
+        <div class="">
+            <div class="form-header">
+                <h2 class="form-title">
+                    <span>🎤</span>
+                    <span>Crear nueva entrevista</span>
+                </h2>
+                <p class="form-subtitle">
+                    Configura tu entrevista técnica personalizada y comienza a mejorar tus habilidades
+                </p>
+            </div>
+
+            <form method="post" action="/entrevista/nueva">
+                <div class="form-section">
+                    <label for="duracion" class="form-label">⏱️ Duración de la entrevista:</label>
+                    <select name="duracion" id="duracion" class="form-select" required>
+                        {% for clave, valores in config.items() if clave != "_id" %}
+                            <option value="{{ clave }}">
+                                Entrevista {{ clave }} ({{ valores.minutos }} min)
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <div class="duration-info">
+                        <span class="info-icon">ℹ️</span>
+                        <span>Selecciona la duración que mejor se adapte a tu disponibilidad</span>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <label for="modo" class="form-label">🎯 Modo de entrevista:</label>
+                    <select name="modo" id="modo" class="form-select" required>
+                        <option value="mixto">🔀 Mixto (técnica y blanda)</option>
+                        <option value="solo tecnica">⚡ Solo técnica</option>
+                        <option value="solo blanda">💬 Solo blanda</option>
+                        <option value="codigo">💻 Código</option>
+                    </select>
+                    <div class="mode-info">
+                        <span class="info-icon">💡</span>
+                        <span>Elige el tipo de entrevista que quieres practicar</span>
+                    </div>
+                </div>
+
+                <button type="submit" class="start-interview-btn">
+                    <span>🚀</span>
+                    <span>Comenzar entrevista</span>
+                </button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
