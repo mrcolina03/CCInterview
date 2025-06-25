@@ -53,6 +53,10 @@ async def crear_entrevista(
     payload = decode_token(token)
     if not payload:
         return RedirectResponse(url="/auth/login")
+    
+    cv = await db["cv"].find_one({"usuario_id": payload.get("sub")})
+    if not cv:
+        return RedirectResponse(url="/?error=no_cv", status_code=302)
 
     usuario_id = payload.get("sub")
     
@@ -109,6 +113,7 @@ async def mostrar_entrevista(request: Request, entrevista_id: str):
     payload = decode_token(token)
     if not payload:
         return RedirectResponse(url="/auth/login")
+    
 
     entrevista = await db["entrevistas"].find_one({"_id": ObjectId(entrevista_id)})
     if not entrevista:
@@ -134,6 +139,7 @@ async def mostrar_entrevista(request: Request, entrevista_id: str):
     pregunta_actual = preguntas_no_respondidas[0] if preguntas_no_respondidas else None
     terminada = pregunta_actual is None
     
+    
      # Obtener plantillas desde config solo si es pregunta tipo código
     plantillas = {}
     if pregunta_actual["tipo"] == "codigo":
@@ -143,6 +149,14 @@ async def mostrar_entrevista(request: Request, entrevista_id: str):
         config_doc = await db["config"].find_one({"_id": "plantillas_codigo"})
         plantillas = config_doc.get("plantillas", {}) if config_doc else {}
 
+    # Si se desea reanudar: usa "tiempo_restante" si existe
+    terminada = entrevista.get("estado") == "terminada"
+    
+    duracion_total = entrevista["duracion_min"] * 60
+    tiempo_restante = entrevista.get("tiempo_restante", duracion_total)
+    
+    # No pasar tiempo si ya está terminada
+    tiempo_mostrar = tiempo_restante if not terminada else 0
 
     return templates.TemplateResponse("preguntas.html", {
         "request": request,
@@ -151,7 +165,9 @@ async def mostrar_entrevista(request: Request, entrevista_id: str):
         "terminada": terminada,
         "usuario": payload,
         "plantillas": plantillas,
-        "plantillas_json": json.dumps(plantillas)
+        "plantillas_json": json.dumps(plantillas),
+        "duracion_segundos": tiempo_mostrar,
+        "entrevista_estado": entrevista.get("estado", ""),
     })
 
 @router.post("/responder/{entrevista_id}")
@@ -199,12 +215,62 @@ async def responder_pregunta_general(
             print(f"Error procesando audio: {e}")
             analisis_audio = {"error": str(e)}
 
+        pregunta_doc = await db["preguntas"].find_one({"_id": ObjectId(pregunta_id)})
+        texto_pregunta = pregunta_doc.get("pregunta", "") if pregunta_doc else ""
+        calificacion = await evaluar_respuesta_llm(texto_pregunta, texto_transcrito)
+
         doc_respuesta.update({
             "respuesta_texto": texto_transcrito,
+            "calificacion_openai": calificacion,
             "analisis_audio": analisis_audio
         })
 
     # Insertar la respuesta (en cualquier caso)
     await db["respuestas"].insert_one(doc_respuesta)
+    
+    # Verificar si ya se respondieron todas las preguntas
+    total = await db["preguntas"].count_documents({"entrevista_id": ObjectId(entrevista_id)})
+    respondidas = await db["respuestas"].count_documents({"entrevista_id": ObjectId(entrevista_id)})
+
+    if respondidas >= total:
+        await db["entrevistas"].update_one(
+            {"_id": ObjectId(entrevista_id)},
+            {
+                "$set": {
+                    "estado": "terminada",
+                    "fecha_fin": datetime.utcnow()
+                },
+                "$unset": {"tiempo_restante": ""}
+            }
+        )
 
     return RedirectResponse(url=f"/entrevista/preguntas/{entrevista_id}", status_code=302)
+
+@router.post("/finalizar/{entrevista_id}")
+async def finalizar_entrevista(entrevista_id: str):
+    await db["entrevistas"].update_one(
+        {"_id": ObjectId(entrevista_id)},
+        {
+            "$set": {
+                "estado": "terminada",
+                "fecha_fin": datetime.utcnow()
+            },
+            "$unset": {"tiempo_restante": ""}
+        }
+    )
+    return {"status": "ok"}
+
+
+from fastapi import Body
+
+@router.post("/guardar-tiempo")
+async def guardar_tiempo_restante(data: dict = Body(...)):
+    entrevista_id = data.get("entrevista_id")
+    tiempo_restante = data.get("tiempo_restante")
+
+    if entrevista_id and tiempo_restante is not None:
+        await db["entrevistas"].update_one(
+            {"_id": ObjectId(entrevista_id)},
+            {"$set": {"tiempo_restante": tiempo_restante}}
+        )
+    return {"status": "ok"}
