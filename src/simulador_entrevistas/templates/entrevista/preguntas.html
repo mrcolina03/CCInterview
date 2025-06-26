@@ -1,9 +1,8 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Entrevista en Progreso - ccInterview</title>
+{% extends "base.html" %}
+
+{% block title %}Entrevista en Progreso{% endblock %}
+
+{% block content %}
     <link rel="stylesheet" href="{{ url_for('static', path='css/estilos.css') }}">
     <style>
         /* Estilos específicos para la entrevista */
@@ -348,6 +347,7 @@
     </style>
 </head>
 <body>
+    <div style="height: 50px;"></div>
     <div class="interview-container">
         <div class="interview-card">
             {% if terminada %}
@@ -611,5 +611,4 @@
             {% endif %}
         </div>
     </div>
-</body>
-</html>
+{% endblock %}
