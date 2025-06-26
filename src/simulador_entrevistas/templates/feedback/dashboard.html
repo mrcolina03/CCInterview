@@ -351,6 +351,7 @@
                             <th>Prom. Código</th>
                             <th>Prom. Técnica</th>
                             <th>Prom. Blanda</th>
+                            <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -388,6 +389,18 @@
                                     {% else %}
                                         <span class="text-muted">-</span>
                                     {% endif %}
+                                </td>
+                                <td>
+                                    <a href="/feedback/ver-resultados/{{ entrevista._id }}" class="btn btn-secondary" style="font-size: 0.8rem; padding: var(--space-xs) var(--space-sm);">
+                                        <span>👁️</span>
+                                        <span>Ver</span>
+                                    </a>
+                                        {% if entrevista.estado == "en_progreso" %}
+                                        <a href="/entrevista/preguntas/{{ entrevista._id }}" class="btn btn-primary" style="font-size: 0.8rem; padding: var(--space-xs) var(--space-sm);">
+                                            <span>▶️</span>
+                                            <span>Continuar</span>
+                                        </a>
+                                        {% endif %}
                                 </td>
                             </tr>
                         {% endfor %}
