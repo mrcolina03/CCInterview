@@ -221,7 +221,6 @@ async def responder_pregunta_general(
 
         doc_respuesta.update({
             "respuesta_texto": texto_transcrito,
-            "evaluacion_llm": calificacion,
             "analisis_audio": analisis_audio
         })
 
