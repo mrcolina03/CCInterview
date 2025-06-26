@@ -451,5 +451,40 @@
             </div>
         </form>
     </div>
+        <div id="pantalla-carga" class="pantalla-carga oculto">
+        <div class="loader-content">
+            <div id="lottie" class="lottie-anim"></div>
+            <p class="texto-carga">PROCESANDO...</p>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/lottie-web/build/player/lottie.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Inicializar animación Lottie
+            lottie.loadAnimation({
+                container: document.getElementById("lottie"),
+                renderer: "svg",
+                loop: true,
+                autoplay: true,
+                path: "{{ url_for('static', path='animations/cargando.json') }}"  // Ajusta si el path es diferente
+            });
+
+            // Captura de envío del formulario
+            const form = document.querySelector(".cv-form");
+            const loader = document.getElementById("pantalla-carga");
+
+            form.addEventListener("submit", function (e) {
+                // Evita múltiples envíos
+                if (form.dataset.enviando === "true") {
+                    e.preventDefault();
+                    return;
+                }
+
+                form.dataset.enviando = "true"; // Marca que ya se está enviando
+                loader.classList.remove("oculto"); // Muestra pantalla de carga
+            });
+        });
+    </script>
 </body>
 </html>
