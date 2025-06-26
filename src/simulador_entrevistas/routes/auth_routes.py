@@ -22,14 +22,17 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates/auth"))
 
 @router.get("/register", response_class=HTMLResponse)
-async def register_form(request: Request):
-    return templates.TemplateResponse("register.html", {"request": request})
+async def register_form(request: Request, error: Optional[str] = None):
+    mensaje = None
+    if error == "exists":
+        mensaje = "El correo electrónico ya está registrado."
+    return templates.TemplateResponse("register.html", {"request": request, "mensaje": mensaje})
 
 @router.post("/register")
 async def register_user(request: Request, email: str = Form(...), password: str = Form(...)):
     existing = await db["usuarios"].find_one({"email": email})
     if existing:
-        raise HTTPException(status_code=400, detail="El usuario ya existe.")
+        return RedirectResponse(url="/auth/register?error=exists", status_code=303)
 
     user = {
         "email": email,
