@@ -1,8 +1,9 @@
-{% extends "base.html" %}
-
-{% block title %}Entrevista en Progreso{% endblock %}
-
-{% block content %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entrevista en Progreso - ccInterview</title>
     <link rel="stylesheet" href="{{ url_for('static', path='css/estilos.css') }}">
     <style>
         /* Estilos específicos para la entrevista */
@@ -347,7 +348,6 @@
     </style>
 </head>
 <body>
-    <div style="height: 50px;"></div>
     <div class="interview-container">
         <div class="interview-card">
             {% if terminada %}
@@ -596,6 +596,7 @@
                                         btnIniciar.style.display = "inline-block";
                                     }
                                 };
+                                
                                 </script>
                             </div>
                         {% endif %}
@@ -607,32 +608,33 @@
                             </button>
                         </div>
                         <script>
-                            document.addEventListener('DOMContentLoaded', function() {
-                                const form = document.querySelector('form'); // o el selector específico de tu formulario
-                                const submitBtn = document.getElementById('enviar');
-                                
-                                form.addEventListener('submit', function(e) {
-                                    // Deshabilitar el botón inmediatamente
-                                    submitBtn.disabled = true;
-                                    
-                                    // Cambiar el texto y apariencia
-                                    const textSpan = submitBtn.querySelector('span:last-child');
-                                    textSpan.textContent = 'Enviando...';
-                                    
-                                    // Cambiar apariencia visual
-                                    submitBtn.style.opacity = '0.6';
-                                    submitBtn.style.cursor = 'not-allowed';
-                                    submitBtn.style.transform = 'none';
-                                    
-                                    // Opcional: Agregar spinner
-                                    const iconSpan = submitBtn.querySelector('span:first-child');
-                                    iconSpan.textContent = '⏳';
-                                });
-                            });
-                        </script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form'); // o el selector específico de tu formulario
+    const submitBtn = document.getElementById('enviar');
+    
+    form.addEventListener('submit', function(e) {
+        // Deshabilitar el botón inmediatamente
+        submitBtn.disabled = true;
+        
+        // Cambiar el texto y apariencia
+        const textSpan = submitBtn.querySelector('span:last-child');
+        textSpan.textContent = 'Enviando...';
+        
+        // Cambiar apariencia visual
+        submitBtn.style.opacity = '0.6';
+        submitBtn.style.cursor = 'not-allowed';
+        submitBtn.style.transform = 'none';
+        
+        // Opcional: Agregar spinner
+        const iconSpan = submitBtn.querySelector('span:first-child');
+        iconSpan.textContent = '⏳';
+    });
+});
+</script>
                     </form>
                 </div>
             {% endif %}
         </div>
     </div>
-{% endblock %}
+</body>
+</html>
