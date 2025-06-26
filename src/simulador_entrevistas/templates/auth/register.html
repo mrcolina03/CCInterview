@@ -7,6 +7,13 @@
     <link rel="stylesheet" href="{{ url_for('static', path='css/estilos.css') }}">
 </head>
 <body>
+     {% if mensaje %}
+    <div class="global-message-recovery">
+        <div class="alert alert-error">
+            {{ mensaje }}
+        </div>
+    </div>
+    {% endif %}
     <div class="login-container">
         <!-- Sección izquierda - Hero Tech -->
         <div class="hero-section bg-gradient">
