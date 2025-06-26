@@ -243,3 +243,63 @@ async def mostrar_dashboard(request: Request):
         "entrevistas": entrevistas_con_detalles
     })
 
+@router.get("/ver-resultados/{entrevista_id}", response_class=HTMLResponse)
+async def ver_resultados(request: Request, entrevista_id: str = Path(...)):
+    token = request.cookies.get("access_token")
+    if not token:
+        return RedirectResponse(url="/auth/login")
+
+    from auth.auth import decode_token
+    payload = decode_token(token)
+    if not payload:
+        return RedirectResponse(url="/auth/login")
+
+    # Verificar que la entrevista existe
+    entrevista = await db["entrevistas"].find_one({"_id": ObjectId(entrevista_id)})
+    if not entrevista:
+        return RedirectResponse(url="/")
+
+    # Obtener preguntas de código
+    preguntas = await db["preguntas"].find({
+        "entrevista_id": ObjectId(entrevista_id),
+        "tipo": "codigo"
+    }).to_list(length=None)
+
+    pregunta_ids = [p["_id"] for p in preguntas]
+    respuestas = await db["respuestas"].find({
+        "pregunta_id": {"$in": pregunta_ids}
+    }).to_list(length=None)
+
+    # Obtener preguntas técnicas
+    preguntasTec = await db["preguntas"].find({
+        "entrevista_id": ObjectId(entrevista_id),
+        "tipo": "tecnica"
+    }).to_list(length=None)
+
+    preguntaTec_ids = [p["_id"] for p in preguntasTec]
+    respuestasTec = await db["respuestas"].find({
+        "pregunta_id": {"$in": preguntaTec_ids}
+    }).to_list(length=None)
+
+    # Obtener preguntas blandas
+    preguntasBla = await db["preguntas"].find({
+        "entrevista_id": ObjectId(entrevista_id),
+        "tipo": "blanda"
+    }).to_list(length=None)
+
+    preguntaBla_ids = [p["_id"] for p in preguntasBla]
+    respuestasBla = await db["respuestas"].find({
+        "pregunta_id": {"$in": preguntaBla_ids}
+    }).to_list(length=None)
+
+    return templates.TemplateResponse("resultados.html", {
+        "request": request,
+        "usuario": payload,
+        "entrevista": entrevista,
+        "preguntas": preguntas,
+        "respuestas": respuestas,
+        "preguntasTec": preguntasTec,
+        "respuestasTec": respuestasTec,
+        "preguntasBla": preguntasBla,
+        "respuestasBla": respuestasBla
+    })
