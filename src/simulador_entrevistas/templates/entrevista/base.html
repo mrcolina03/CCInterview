@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>{% block title %}Entrevista{% endblock %}</title>
+
+    <script>
+        let tiempoRestante = {{ duracion_segundos }};
+        const entrevistaId = "{{ entrevista_id }}";
+        const entrevistaEstado = "{{ entrevista_estado }}";
+        let timerInterval;
+
+        function iniciarTemporizador() {
+            const timerDisplay = document.getElementById("timer");
+            if (!timerDisplay) return;
+
+            function actualizar() {
+                const minutos = Math.floor(tiempoRestante / 60);
+                const segundos = tiempoRestante % 60;
+                timerDisplay.textContent = `${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
+                if (tiempoRestante <= 0) {
+                    clearInterval(timerInterval);
+                    finalizarEntrevista();
+                }
+                tiempoRestante -= 1;
+            }
+
+            actualizar();
+            timerInterval = setInterval(actualizar, 1000);
+        }
+
+        function finalizarEntrevista() {
+            fetch(`/entrevista/finalizar/${entrevistaId}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" }
+            }).then(() => {
+                window.location.href = `/feedback/resultados/${entrevistaId}`;
+            });
+        }
+
+        window.addEventListener("beforeunload", function (e) {
+            if (tiempoRestante > 0 && entrevistaEstado !== "terminada") {
+                navigator.sendBeacon(
+                    "/entrevista/guardar-tiempo",
+                    new Blob([JSON.stringify({
+                        entrevista_id: entrevistaId,
+                        tiempo_restante: tiempoRestante
+                    })], { type: "application/json" })
+                );
+            }
+        });
+
+        window.onload = () => {
+            if (entrevistaEstado !== "terminada" && tiempoRestante > 0) {
+                iniciarTemporizador();
+            }
+        };
+    </script>
+
+    <style>
+        #timer-container {
+            position: fixed;
+            top: 0;
+            right: 0;
+            background: #222;
+            color: white;
+            padding: 10px 20px;
+            font-family: monospace;
+            font-size: 18px;
+            z-index: 1000;
+            border-bottom-left-radius: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    {% if entrevista_estado != "terminada" %}
+    <div id="timer-container">
+        ⏳ Tiempo restante: <span id="timer">--:--</span>
+    </div>
+    {% endif %}
+
+    {% block content %}{% endblock %}
+</body>
+
+</html>
