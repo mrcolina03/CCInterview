@@ -278,7 +278,7 @@ async def evaluar_respuesta_llm(pregunta: str, respuesta_usuario: str) -> dict:
     Devuelve un dict con feedback, puntuación y sugerencias.
     """
     prompt = f"""
-Eres un evaluador de entrevistas técnicas y blandas para desarrolladores junior.
+Eres un evaluador de entrevistas técnicas y blandas para desarrolladores de software junior.
 
 Pregunta de entrevista:
 "{pregunta}"
@@ -287,7 +287,7 @@ Respuesta del candidato:
 "{respuesta_usuario}"
 
 Evalúa de forma objetiva la respuesta. Devuelve solo un JSON con los siguientes campos:
-- "puntaje": número entero entre 0 y 10 (0 = muy mala, 10 = excelente)
+- "puntaje": número entero entre 0 y 10 (0 = muy mala o no responde, 10 = excelente)
 - "justificacion": texto explicando por qué se asignó ese puntaje
 - "sugerencias": texto con recomendaciones claras y breves para mejorar esa respuesta
 
