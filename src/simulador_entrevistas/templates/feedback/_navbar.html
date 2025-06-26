@@ -1,0 +1,108 @@
+<!-- templates/_navbar.html -->
+<style>
+/* Estilos para el navbar */
+nav {
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border-color);
+    padding: var(--space-md) 0;
+    box-shadow: var(--shadow-sm);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(10px);
+}
+
+nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: var(--space-xl);
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 var(--space-lg);
+}
+
+nav li {
+    margin: 0;
+}
+
+nav a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 1rem;
+    padding: var(--space-sm) var(--space-md);
+    border-radius: var(--radius);
+    transition: all var(--transition);
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+}
+
+nav a:hover {
+    color: var(--accent-blue);
+    background: rgba(0, 212, 255, 0.1);
+    transform: translateY(-1px);
+}
+
+nav a:active {
+    transform: translateY(0);
+}
+
+/* Efecto de línea inferior para el enlace activo */
+nav a.active {
+    color: var(--accent-blue);
+    background: rgba(0, 212, 255, 0.1);
+}
+
+nav a.active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+    height: 2px;
+    background: var(--accent-blue);
+    border-radius: var(--radius-sm);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    nav {
+        padding: var(--space-sm) 0;
+    }
+    
+    nav ul {
+        gap: var(--space-md);
+        padding: 0 var(--space-md);
+    }
+    
+    nav a {
+        font-size: 0.9rem;
+        padding: var(--space-xs) var(--space-sm);
+    }
+}
+
+@media (max-width: 480px) {
+    nav ul {
+        gap: var(--space-sm);
+        padding: 0 var(--space-sm);
+    }
+    
+    nav a {
+        font-size: 0.85rem;
+        padding: var(--space-xs);
+    }
+}
+</style>
+
+<nav>
+    <ul>
+        <li><a href="/">🏠 Inicio</a></li>
+    </ul>
+</nav>
