@@ -380,13 +380,7 @@
 
         /* Mensaje global para CV */
         .global-message-cv {
-            position: fixed;
-            top: var(--space-lg);
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 1000;
-            width: 90%;
-            max-width: 600px;
+            padding: var(--space-md) var(--space-lg) 0;
         }
 
         /* Botón de regreso */
@@ -414,9 +408,17 @@
 <body>
     {% include "_navbar.html" %}
     <!-- Mensaje global (posición superior) -->
-    {% if mensaje %}
+    {% if mensaje and mensaje != 'CV y perfil guardados exitosamente.' %}
     <div class="global-message-cv">
         <div class="alert alert-error">
+            {{ mensaje }}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if mensaje and mensaje == 'CV y perfil guardados exitosamente.' %}
+    <div class="global-message-cv">
+        <div class="alert alert-info">
             {{ mensaje }}
         </div>
     </div>
