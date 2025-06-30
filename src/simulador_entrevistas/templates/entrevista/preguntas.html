@@ -534,7 +534,7 @@
                                     audioChunks = [];
                                     try {
                                         recordingStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                                        audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 44100 });
+                                        audioContext = new (window.AudioContext || window.webkitAudioContext)();
                                         const source = audioContext.createMediaStreamSource(recordingStream);
                                         const processor = audioContext.createScriptProcessor(4096, 1, 1);
                                         const recordedSamples = [];
@@ -568,7 +568,7 @@
                                                 offset += chunk.length;
                                             });
 
-                                            const wavBuffer = encodeWAV(combinedSamples, 44100);
+                                            const wavBuffer = encodeWAV(combinedSamples, audioContext.sampleRate);
                                             const finalBlob = new Blob([wavBuffer], { type: 'audio/wav' });
                                             const audioUrl = URL.createObjectURL(finalBlob);
                                             preview.src = audioUrl;
