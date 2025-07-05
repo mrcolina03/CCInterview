@@ -316,18 +316,12 @@
                     <div class="stat-number">{{ entrevistas|length }}</div>
                     <div class="stat-label">Total Entrevistas</div>
                 </div>
-                <div class="stat-card">
+                <a href="/feedback/progreso" style="text-decoration: none;">
+                    <div class="stat-card">
                     <div class="stat-number">📊</div>
                     <div class="stat-label">Progreso</div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-number">🎯</div>
-                    <div class="stat-label">Mejorando</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number">⭐</div>
-                    <div class="stat-label">Destacado</div>
-                </div>
+                </a>
             </div>
 
             <!-- Tabla de entrevistas -->
@@ -391,10 +385,12 @@
                                     {% endif %}
                                 </td>
                                 <td>
-                                    <a href="/feedback/ver-resultados/{{ entrevista._id }}" class="btn btn-secondary" style="font-size: 0.8rem; padding: var(--space-xs) var(--space-sm);">
-                                        <span>👁️</span>
-                                        <span>Ver</span>
-                                    </a>
+                                    {% if entrevista.estado == "terminada" %}
+                                        <a href="/feedback/ver-resultados/{{ entrevista._id }}" class="btn btn-secondary" style="font-size: 0.8rem; padding: var(--space-xs) var(--space-sm);">
+                                            <span>Ver</span>
+                                        </a>
+                                    {% endif %}
+                                    
                                         {% if entrevista.estado == "en_progreso" %}
                                         <a href="/entrevista/preguntas/{{ entrevista._id }}" class="btn btn-primary" style="font-size: 0.8rem; padding: var(--space-xs) var(--space-sm);">
                                             <span>▶️</span>
@@ -405,6 +401,58 @@
                             </tr>
                         {% endfor %}
                     </tbody>
+                    <tfoot>
+                        <tr class="totals-row">
+                            <td class="totals-label">
+                                <strong>📊 TOTALES</strong>
+                            </td>
+                            <td>
+                                <span class="count-badge total-badge">{{ totales.total_preguntas }}</span>
+                            </td>
+                            <td>
+                                <span class="count-badge total-badge">{{ totales.total_codigo }}</span>
+                            </td>
+                            <td>
+                                <span class="count-badge total-badge">{{ totales.total_tecnica }}</span>
+                            </td>
+                            <td>
+                                <span class="count-badge total-badge">{{ totales.total_blanda }}</span>
+                            </td>
+                            <td>
+                                <span class="estado-total">{{ totales.total_entrevistas }} entrevistas</span>
+                            </td>
+                            <td>
+                                {% if totales.promedio_general_codigo != "N/A" %}
+                                    <span class="promedio-score total-score {% if totales.promedio_general_codigo >= 8 %}score-high{% elif totales.promedio_general_codigo >= 6 %}score-medium{% else %}score-low{% endif %}">
+                                        {{ totales.promedio_general_codigo }}
+                                    </span>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if totales.promedio_general_tecnica != "N/A" %}
+                                    <span class="promedio-score total-score {% if totales.promedio_general_tecnica >= 8 %}score-high{% elif totales.promedio_general_tecnica >= 6 %}score-medium{% else %}score-low{% endif %}">
+                                        {{ totales.promedio_general_tecnica }}
+                                    </span>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if totales.promedio_general_blanda != "N/A" %}
+                                    <span class="promedio-score total-score {% if totales.promedio_general_blanda >= 8 %}score-high{% elif totales.promedio_general_blanda >= 6 %}score-medium{% else %}score-low{% endif %}">
+                                        {{ totales.promedio_general_blanda }}
+                                    </span>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="actions-total">-</span>
+                            </td>
+                        </tr>
+                    </tfoot>
                 </table>
             </div>
         {% else %}
