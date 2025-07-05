@@ -24,9 +24,8 @@ async def submit_form(
     frameworks: str = Form(""),
     bases_datos: str = Form(""),
     herramientas: str = Form(""),
-    exp_puesto: list[str] = Form(default=[]),
+    exp_puesto: list[str] = Form(),
     exp_empresa: list[str] = Form(default=[]),
-    exp_duracion: list[str] = Form(default=[]),
     exp_descripcion: list[str] = Form(default=[]),
     cert_nombre: list[str] = Form(default=[]),
     cert_emisor: list[str] = Form(default=[]),
@@ -34,7 +33,10 @@ async def submit_form(
     idioma_nivel: list[str] = Form(default=[]),
     estudio_institucion: list[str] = Form(default=[]),
     estudio_titulo: list[str] = Form(default=[]),
-    estudio_anios: list[str] = Form(default=[])
+    exp_fecha_inicio: list[str] = Form(default=[]),
+    exp_fecha_fin: list[str] = Form(default=[]),
+    estudio_fecha_inicio: list[str] = Form(default=[]),
+    estudio_fecha_fin: list[str] = Form(default=[])
 ):
     user_id = ObjectId(user["sub"])
     existente = await db["curriculum"].find_one({"usuario_id": user_id})
@@ -48,7 +50,8 @@ async def submit_form(
             "herramientas": herramientas,
             "exp_puesto": exp_puesto,
             "exp_empresa": exp_empresa,
-            "exp_duracion": exp_duracion,
+            "exp_fecha_inicio": exp_fecha_inicio,
+            "exp_fecha_fin": exp_fecha_fin,
             "exp_descripcion": exp_descripcion,
             "cert_nombre": cert_nombre,
             "cert_emisor": cert_emisor,
@@ -56,7 +59,8 @@ async def submit_form(
             "idioma_nivel": idioma_nivel,
             "estudio_institucion": estudio_institucion,
             "estudio_titulo": estudio_titulo,
-            "estudio_anios": estudio_anios
+            "estudio_fecha_inicio": estudio_fecha_inicio,
+            "estudio_fecha_fin": estudio_fecha_fin
         }
         return templates.TemplateResponse("confirmacion_cv.html", {
             "request": request,
@@ -66,9 +70,9 @@ async def submit_form(
     # Si no existe CV, sigue el flujo normal
     return await guardar_cv_y_perfil(
         request, user, nombre, lenguajes, frameworks, bases_datos, herramientas,
-        exp_puesto, exp_empresa, exp_duracion, exp_descripcion,
+        exp_puesto, exp_empresa, exp_fecha_inicio, exp_fecha_fin , exp_descripcion,
         cert_nombre, cert_emisor, idioma_nombre, idioma_nivel,
-        estudio_institucion, estudio_titulo, estudio_anios
+        estudio_institucion, estudio_titulo, estudio_fecha_inicio, estudio_fecha_fin
     )
 
 @router.post("/confirmar")
@@ -82,7 +86,8 @@ async def confirmar_cv(
     herramientas: str = Form(""),
     exp_puesto: list[str] = Form(default=[]),
     exp_empresa: list[str] = Form(default=[]),
-    exp_duracion: list[str] = Form(default=[]),
+    exp_fecha_inicio: list[str] = Form(default=[]),
+    exp_fecha_fin: list[str] = Form(default=[]),
     exp_descripcion: list[str] = Form(default=[]),
     cert_nombre: list[str] = Form(default=[]),
     cert_emisor: list[str] = Form(default=[]),
@@ -90,14 +95,15 @@ async def confirmar_cv(
     idioma_nivel: list[str] = Form(default=[]),
     estudio_institucion: list[str] = Form(default=[]),
     estudio_titulo: list[str] = Form(default=[]),
-    estudio_anios: list[str] = Form(default=[])
+    estudio_fecha_inicio: list[str] = Form(default=[]),
+    estudio_fecha_fin: list[str] = Form(default=[])
 ):
     await eliminar_perfil(user)
     return await guardar_cv_y_perfil(
         request, user, nombre, lenguajes, frameworks, bases_datos, herramientas,
-        exp_puesto, exp_empresa, exp_duracion, exp_descripcion,
+        exp_puesto, exp_empresa, exp_fecha_inicio, exp_fecha_fin, exp_descripcion,
         cert_nombre, cert_emisor, idioma_nombre, idioma_nivel,
-        estudio_institucion, estudio_titulo, estudio_anios
+        estudio_institucion, estudio_titulo, estudio_fecha_inicio, estudio_fecha_fin
     )
 
 
@@ -117,16 +123,17 @@ async def perfil_usuario(request: Request, user: dict = Depends(get_current_user
     })
 
 async def guardar_cv_y_perfil(request, user, nombre, lenguajes, frameworks, bases_datos, herramientas,
-                              exp_puesto, exp_empresa, exp_duracion, exp_descripcion,
+                              exp_puesto, exp_empresa, exp_fecha_inicio, exp_fecha_fin, exp_descripcion,
                               cert_nombre, cert_emisor, idioma_nombre, idioma_nivel,
-                              estudio_institucion, estudio_titulo, estudio_anios):
+                              estudio_institucion, estudio_titulo, estudio_fecha_inicio, estudio_fecha_fin):
     user_id = user["sub"]
 
     experiencia = [
         {
             "puesto": exp_puesto[i],
             "empresa": exp_empresa[i],
-            "duracion": exp_duracion[i],
+            "fecha_inicio": exp_fecha_inicio[i],
+            "fecha_fin": exp_fecha_fin[i],
             "descripcion": exp_descripcion[i]
         } for i in range(len(exp_puesto))
     ]
@@ -149,7 +156,8 @@ async def guardar_cv_y_perfil(request, user, nombre, lenguajes, frameworks, base
         {
             "institucion": estudio_institucion[i],
             "titulo": estudio_titulo[i],
-            "anios": estudio_anios[i]
+            "fecha_inicio": estudio_fecha_inicio[i],
+            "fecha_fin": estudio_fecha_fin[i]
         } for i in range(len(estudio_institucion))
     ]
 
@@ -167,6 +175,7 @@ async def guardar_cv_y_perfil(request, user, nombre, lenguajes, frameworks, base
         "idiomas": idiomas,
         "estudios": estudios
     }
+    print(f"Curriculum a guardar: {curriculum}")
 
     try:
         perfil_usuario = await crear_perfil_usuario(curriculum)
