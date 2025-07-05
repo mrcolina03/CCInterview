@@ -264,6 +264,20 @@
             margin-bottom: var(--space-md);
         }
 
+        .agr-btn {
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            min-width: 100px;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .cv-container {
@@ -314,7 +328,6 @@
             <h1 class="cv-title">Formulario de CV</h1>
             <p class="cv-subtitle">Completa tu información profesional para ccInterview</p>
         </div>
-
         <form class="cv-form" action="/cv/submit" method="post">
             <!-- INFORMACIÓN PERSONAL -->
             <div class="cv-section">
@@ -346,8 +359,9 @@
                         <input type="text" name="exp_puesto" class="form-input" placeholder="Puesto" required>
                         <input type="text" name="exp_empresa" class="form-input" placeholder="Empresa" required>
                     </div>
-                    <div class="form-group">
-                        <input type="text" name="exp_duracion" class="form-input" placeholder="Duración (ej: Ene 2020 - Dic 2022)" required>
+                    <div class="form-row">
+                        <input type="date" name="exp_fecha_inicio" class="form-input" placeholder="Fecha de inicio" required>
+                        <input type="date" name="exp_fecha_fin" class="form-input" placeholder="Fecha de fin" required>
                     </div>
                     <div class="form-group">
                         <textarea name="exp_descripcion" class="form-input" placeholder="Descripción de responsabilidades y logros" required></textarea>
@@ -401,23 +415,146 @@
 
             <!-- HABILIDADES TÉCNICAS -->
             <div class="cv-section">
-                <h2 class="cv-section-title">
-                    <span class="section-icon">⚡</span>
-                    Habilidades Técnicas
-                </h2>
-                <div class="form-group">
-                    <input type="text" name="lenguajes" class="form-input" placeholder="Lenguajes de programación (ej: Python, JavaScript)" required>
+            <h2 class="cv-section-title">
+                <span class="section-icon">⚡</span>
+                Habilidades Técnicas
+            </h2>
+
+            <!-- Lenguajes -->
+            <div class="form-group">
+                <label for="select-lenguajes">Lenguajes de programación</label>
+                <select id="select-lenguajes" class="form-input">
+                <option value="" disabled selected>Selecciona un lenguaje</option>
+                <option>Python</option>
+                <option>JavaScript</option>
+                <option>Java</option>
+                <option>C#</option>
+                <option>Go</option>
+                </select>
+                <div class="custom-entry">
+                <input type="text" id="input-lenguajes" class="form-input" placeholder="Agregar otro lenguaje">
+                <button type="button" class="agr-btn" onclick="agregarPersonalizado('lenguajes')">Agregar</button>
                 </div>
-                <div class="form-group">
-                    <input type="text" name="frameworks" class="form-input" placeholder="Frameworks (ej: React, Django)">
-                </div>
-                <div class="form-group">
-                    <input type="text" name="bases_datos" class="form-input" placeholder="Bases de datos (ej: PostgreSQL, MongoDB)">
-                </div>
-                <div class="form-group">
-                    <input type="text" name="herramientas" class="form-input" placeholder="Herramientas (ej: Git, Docker, VSCode)">
-                </div>
+                <div id="tags-lenguajes" class="tags-container"></div>
+                <input type="hidden" name="lenguajes" id="hidden-lenguajes" required>
             </div>
+
+            <!-- Frameworks -->
+            <div class="form-group">
+                <label for="select-frameworks">Frameworks</label>
+                <select id="select-frameworks" class="form-input">
+                <option value="" disabled selected>Selecciona un framework</option>
+                <option>React</option>
+                <option>Vue</option>
+                <option>Django</option>
+                <option>Flask</option>
+                <option>Angular</option>
+                </select>
+                <div class="custom-entry">
+                <input type="text" id="input-frameworks" class="form-input" placeholder="Agregar otro framework">
+                <button type="button" class="agr-btn" onclick="agregarPersonalizado('frameworks')">Agregar</button>
+                </div>
+                <div id="tags-frameworks" class="tags-container"></div>
+                <input type="hidden" name="frameworks" id="hidden-frameworks">
+            </div>
+
+            <!-- Bases de Datos -->
+            <div class="form-group">
+                <label for="select-bases">Bases de datos</label>
+                <select id="select-bases" class="form-input">
+                <option value="" disabled selected>Selecciona una base de datos</option>
+                <option>PostgreSQL</option>
+                <option>MySQL</option>
+                <option>MongoDB</option>
+                <option>SQLite</option>
+                <option>Redis</option>
+                </select>
+                <div class="custom-entry">
+                <input type="text" id="input-bases" class="form-input" placeholder="Agregar otra base de datos">
+                <button type="button" class="agr-btn" onclick="agregarPersonalizado('bases')">Agregar</button>
+                </div>
+                <div id="tags-bases" class="tags-container"></div>
+                <input type="hidden" name="bases_datos" id="hidden-bases">
+            </div>
+
+            <!-- Herramientas -->
+            <div class="form-group">
+                <label for="select-herramientas">Herramientas</label>
+                <select id="select-herramientas" class="form-input">
+                <option value="" disabled selected>Selecciona una herramienta</option>
+                <option>Git</option>
+                <option>Docker</option>
+                <option>VSCode</option>
+                <option>Figma</option>
+                <option>Postman</option>
+                </select>
+                <div class="custom-entry">
+                <input type="text" id="input-herramientas" class="form-input" placeholder="Agregar otra herramienta">
+                <button type="button" class="agr-btn" onclick="agregarPersonalizado('herramientas')">Agregar</button>
+                </div>
+                <div id="tags-herramientas" class="tags-container"></div>
+                <input type="hidden" name="herramientas" id="hidden-herramientas">
+            </div>
+            <script>
+  const data = {
+    lenguajes: new Set(),
+    frameworks: new Set(),
+    bases: new Set(),
+    herramientas: new Set()
+  };
+
+  const secciones = ["lenguajes", "frameworks", "bases", "herramientas"];
+
+  secciones.forEach(tipo => {
+    const select = document.getElementById(`select-${tipo}`);
+    select.addEventListener("change", () => {
+      const valor = select.value;
+      if (valor && !data[tipo].has(valor)) {
+        data[tipo].add(valor);
+        actualizarVista(tipo);
+      }
+      select.value = "";
+    });
+  });
+
+  function agregarPersonalizado(tipo) {
+    const input = document.getElementById(`input-${tipo}`);
+    const valor = input.value.trim();
+    if (valor && !data[tipo].has(valor)) {
+      data[tipo].add(valor);
+      input.value = "";
+      actualizarVista(tipo);
+    }
+  }
+
+  function actualizarVista(tipo) {
+    const contenedor = document.getElementById(`tags-${tipo}`);
+    const hiddenInput = document.getElementById(`hidden-${tipo}`);
+    contenedor.innerHTML = "";
+
+    data[tipo].forEach(valor => {
+      const tag = document.createElement("span");
+      tag.className = "tag";
+      tag.textContent = valor;
+
+      const closeBtn = document.createElement("button");
+      closeBtn.textContent = "×";
+      closeBtn.className = "remove-tag";
+      closeBtn.onclick = () => {
+        data[tipo].delete(valor);
+        actualizarVista(tipo);
+      };
+
+      tag.appendChild(closeBtn);
+      contenedor.appendChild(tag);
+    });
+
+    hiddenInput.value = Array.from(data[tipo]).join(",");
+  }
+</script>
+
+            </div>
+
 
             <!-- ESTUDIOS -->
             <div class="cv-section">
@@ -438,8 +575,9 @@
                         <input type="text" name="estudio_institucion" class="form-input" placeholder="Institución" required>
                         <input type="text" name="estudio_titulo" class="form-input" placeholder="Título obtenido" required>
                     </div>
-                    <div class="form-group">
-                        <input type="text" name="estudio_anios" class="form-input" placeholder="Años (ej: 2018 - 2022)" required>
+                    <div class="form-row">
+                        <input type="date" name="estudio_fecha_inicio" class="form-input" placeholder="Fecha de inicio" required>
+                        <input type="date" name="estudio_fecha_fin" class="form-input" placeholder="Fecha de fin" required>
                     </div>
                 </div>
             </template>
