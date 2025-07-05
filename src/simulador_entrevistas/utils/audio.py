@@ -58,7 +58,10 @@ def evaluar_analisis_audio(analisis_audio: dict) -> dict:
     """
 
     if not analisis_audio:
-        return {"evaluacion_audio": "No se proporcionó análisis de audio.", "puntaje_audio": 0}
+        return {
+            "evaluacion_audio": "No se proporcionó análisis de audio.",
+            "puntaje_audio": 0
+        }
 
     duracion = analisis_audio.get("duracion_segundos", 0)
     energia = analisis_audio.get("rms_energy", 0)
@@ -70,42 +73,49 @@ def evaluar_analisis_audio(analisis_audio: dict) -> dict:
     evaluacion = []
     puntaje = 10
 
-    # Duración muy corta podría indicar una respuesta incompleta
+    # Duración
     if duracion < 2:
-        evaluacion.append("La respuesta fue muy corta, posiblemente incompleta.")
+        evaluacion.append("La respuesta fue muy breve. Intenta extender tus respuestas para incluir más detalles y contexto.")
         puntaje -= 2
+    elif duracion < 5:
+        evaluacion.append("La duración fue aceptable, aunque podrías desarrollar un poco más tus ideas para lograr mayor claridad.")
 
-    # Energía de la voz
+    # Energía
     if energia < 0.03:
-        evaluacion.append("La energía de la voz fue baja, lo que puede indicar falta de confianza.")
+        evaluacion.append("La energía de tu voz fue baja. Trata de proyectar tu voz con más confianza y convicción.")
         puntaje -= 1
     elif energia > 0.2:
-        evaluacion.append("La energía fue elevada, lo cual puede reflejar entusiasmo.")
+        evaluacion.append("Mostraste buena energía en tu voz, lo cual transmite entusiasmo y seguridad.")
 
-    # Claridad vocal (Zero Crossing Rate)
+    # Claridad vocal (ZCR)
     if zcr > 0.1:
-        evaluacion.append("La señal presenta muchas transiciones, podría haber ruido o hablar rápido.")
+        evaluacion.append("Se detectaron muchas transiciones rápidas en la señal. Habla un poco más pausado para mejorar la claridad.")
         puntaje -= 1
+    elif zcr < 0.04:
+        evaluacion.append("El ritmo fue controlado, lo cual favorece una comunicación clara.")
 
     # Entonación
     if pitch_avg < 80:
-        evaluacion.append("La voz fue muy grave, lo cual podría dificultar la comprensión.")
+        evaluacion.append("La voz fue muy grave. Asegúrate de mantener un tono que facilite la comprensión.")
         puntaje -= 1
     elif pitch_avg > 300 and pitch_std > 500:
-        evaluacion.append("La voz tuvo variaciones de tono muy marcadas, posiblemente falta de control vocal.")
+        evaluacion.append("Hubo variaciones marcadas en el tono. Intenta mantener una entonación más estable para transmitir seguridad.")
         puntaje -= 1
+    else:
+        evaluacion.append("La entonación fue adecuada, con variaciones naturales.")
 
-    # Espectro
+    # Centro espectral
     if centroid < 1000:
-        evaluacion.append("El centro espectral fue bajo, la voz puede sonar apagada.")
+        evaluacion.append("Tu voz podría sonar un poco apagada. Trata de vocalizar mejor para ganar presencia vocal.")
         puntaje -= 1
     elif centroid > 3000:
-        evaluacion.append("El centro espectral fue alto, lo que sugiere una voz brillante o aguda.")
+        evaluacion.append("La voz fue clara y con brillo, lo que ayuda a captar la atención.")
 
-    if puntaje < 0:
-        puntaje = 0
+    # Asegurar que el puntaje sea al menos 0
+    puntaje = max(puntaje, 0)
 
     return {
-        "evaluacion_audio": " ".join(evaluacion) if evaluacion else "La calidad vocal fue adecuada.",
+        "evaluacion_audio": " ".join(evaluacion),
         "puntaje_audio": puntaje
     }
+
