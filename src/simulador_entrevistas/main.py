@@ -9,6 +9,8 @@ from routes.entrevista_routes import router as entrevista_router
 from routes.config_routes import router as config_router
 from routes.adaptabilidad_routes import router as adaptabilidad_router
 from routes.feedback_routes import router as feedback_router
+from db.mongo import db
+from bson import ObjectId
 
 from auth.auth import decode_token  # Importa la función para decodificar el token
 import os
@@ -30,28 +32,52 @@ templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
 async def index(request: Request, cv: Optional[str] = None, error: Optional[str] = None):
     token = request.cookies.get("access_token")
     user = None
+    nombre = None
+    mensaje = None
 
     if token:
         payload = decode_token(token)
         if payload:
-            user = {"id": payload.get("sub"), "email": payload.get("email"), "rol": payload.get("rol")}
+            user_id = payload.get("sub")
+            user = {
+                "id": user_id,
+                "email": payload.get("email"),
+                "rol": payload.get("rol")
+            }
 
-    mensaje = None
+            try:
+                usuario_obj_id = ObjectId(user_id)
+            except Exception:
+                usuario_obj_id = user_id  # por si ya viene como string
+
+            try:
+                cv_doc = await db["curriculum"].find_one({"usuario_id": usuario_obj_id})
+                if cv_doc:
+                    nombre = cv_doc.get("nombre", None)
+                else:
+                    print("CV no encontrado para usuario:", usuario_obj_id)
+            except Exception as e:
+                print("Error al obtener el CV:", e)
+                mensaje = "Error al acceder a tu información. Intenta más tarde."
+
+    # Mensajes informativos
     if cv == "false":
         mensaje = "Aún no has registrado tu CV."
-    
-    if cv == "error":
+    elif cv == "error":
         mensaje = "Ha ocurrido un error. Vuelve a intentarlo"
-        
-    if error == "no_cv":
+    elif error == "no_cv":
         mensaje = "No se ha encontrado un CV asociado a tu cuenta. Por favor, crea uno antes de continuar."
-        
-    if error== "mongo":
+    elif error == "mongo":
         mensaje = "Error al conectar con la base de datos. Por favor, inténtalo más tarde."
     elif error == "unexpected":
         mensaje = "Ha ocurrido un error inesperado. Por favor, inténtalo más tarde."
-        
-    return templates.TemplateResponse("index.html", {"request": request, "user": user, "mensaje": mensaje   })
+
+    return templates.TemplateResponse("index.html", {
+        "request": request,
+        "user": user,
+        "mensaje": mensaje,
+        "nombre": nombre
+    })
 
 # Ruta para cerrar sesión
 @app.get("/logout")
