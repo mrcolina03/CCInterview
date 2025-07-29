@@ -166,14 +166,16 @@ async def mostrar_dashboard(request: Request):
     except Exception:
         usuario_obj_id = usuario_id
     entrevistas = await db["entrevistas"].find({"usuario_id": usuario_obj_id}).to_list(length=None)
-    print(f"Entrevistas encontradas para usuario {usuario_id}: {len(entrevistas)}")
     entrevistas_con_detalles = []
+    cv = await db["curriculum"].find_one({"usuario_id": usuario_obj_id})
+    print(cv)
+    nombre = cv["nombre"] if cv else "Sin nombre"
+
     
     for entrevista in entrevistas:
         entrevista_id = entrevista["_id"]
         preguntas = await db["preguntas"].find({"entrevista_id": entrevista_id}).to_list(length=None)
         respuestas = await db["respuestas"].find({"entrevista_id": entrevista_id}).to_list(length=None)
-        print(f"Entrevista {entrevista_id} tiene {len(preguntas)} preguntas y {len(respuestas)} respuestas")
         
         if not preguntas and not respuestas:
             continue  # Saltar entrevistas sin datos reales
@@ -263,7 +265,8 @@ async def mostrar_dashboard(request: Request):
         "request": request,
         "usuario": payload,
         "entrevistas": entrevistas_con_detalles,
-        "totales": totales
+        "totales": totales,
+        "nombre": nombre
     })
 
 @router.get("/ver-resultados/{entrevista_id}", response_class=HTMLResponse)
