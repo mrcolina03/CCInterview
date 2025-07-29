@@ -6,7 +6,7 @@
     <title>Formulario de CV - ccInterview</title>
     <link rel="stylesheet" href="{{ url_for('static', path='css/estilos.css') }}">
     <style>
-                /*Pantalla de carga*/
+        /*Pantalla de carga*/
         .pantalla-carga {
             position: fixed;
             top: 0;
@@ -37,7 +37,7 @@
         }
 
         .texto-carga {
-            color: #ffffff;
+            color: #000;
             font-size: 1.5rem;
             margin-top: 20px;
             font-weight: bold;
@@ -45,16 +45,14 @@
         }
 
         @keyframes parpadeo {
-
-            0%,
-            100% {
+            0%, 100% {
                 opacity: 1;
             }
-
             50% {
                 opacity: 0.4;
             }
         }
+
         /* Estilos específicos para el formulario CV */
         .cv-container {
             min-height: 100vh;
@@ -220,6 +218,12 @@
             overflow: hidden;
         }
 
+        .submit-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
         .submit-btn::before {
             content: '';
             position: absolute;
@@ -231,12 +235,12 @@
             transition: left var(--transition-slow);
         }
 
-        .submit-btn:hover {
+        .submit-btn:hover:not(:disabled) {
             transform: translateY(-3px);
             box-shadow: var(--shadow-lg);
         }
 
-        .submit-btn:hover::before {
+        .submit-btn:hover:not(:disabled)::before {
             left: 100%;
         }
 
@@ -278,6 +282,189 @@
             min-width: 100px;
         }
 
+        /* Estilos para combo select personalizado */
+        .custom-select-container {
+            position: relative;
+            margin-bottom: var(--space-md);
+        }
+
+        .custom-select {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            background: black;
+        }
+
+        .select-header {
+            padding: var(--space-sm) var(--space-md);
+            background: black;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .select-header:hover {
+            background: #34333322;
+        }
+
+        .select-arrow {
+            transition: transform 0.3s ease;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .select-arrow.open {
+            transform: rotate(180deg);
+        }
+
+        .select-search {
+            padding: var(--space-sm);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .search-input {
+            width: 100%;
+            padding: var(--space-sm);
+            border: 1px solid #000000;
+            border-radius: var(--radius-sm);
+            font-size: 0.9rem;
+            outline: none;
+            color: var(--text-primary);
+            background-color: #000000;
+        }
+
+        .search-input:focus {
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.1);
+        }
+
+        .select-options {
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .select-options.show {
+            display: block;
+        }
+
+        .select-option {
+            padding: var(--space-sm) var(--space-md);
+            cursor: pointer;
+            border-bottom: 1px solid #454444;
+            transition: background-color 0.2s ease;
+            font-size: 0.9rem;
+        }
+
+        .select-option:hover {
+            background: #5d5d5d;
+        }
+
+        .select-option:last-child {
+            border-bottom: none;
+        }
+
+        .select-option.hidden {
+            display: none;
+        }
+
+        /* Tags container mejorado */
+        .tags-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-xs);
+            margin-top: var(--space-sm);
+            padding: var(--space-sm);
+            background: #000000;
+            border: 1px solid #000000;
+            border-radius: var(--radius);
+            min-height: 50px;
+            align-items: flex-start;
+        }
+
+        .tags-container:empty::before {
+            content: 'No hay elementos seleccionados';
+            color: var(--text-secondary);
+            font-style: italic;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            height: 36px;
+        }
+
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-xs);
+            background: var(--accent-blue);
+            color: white;
+            padding: var(--space-xs) var(--space-sm);
+            border-radius: var(--radius-sm);
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .remove-tag {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            padding: 0;
+            margin-left: var(--space-xs);
+            width: 16px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background-color 0.2s ease;
+        }
+
+        .remove-tag:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Estilos para las opciones "No tengo" */
+        .no-option-container {
+            margin-bottom: var(--space-lg);
+            padding: var(--space-md);
+            background: #000000;
+            border: 1px solid #e9ecef;
+            border-radius: var(--radius);
+        }
+
+        .no-option-checkbox {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+
+        .no-option-checkbox input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .section-content {
+            transition: opacity 0.3s ease, height 0.3s ease;
+        }
+
+        .section-content.disabled {
+            opacity: 0.4;
+            pointer-events: none;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .cv-container {
@@ -295,6 +482,15 @@
             .form-row {
                 grid-template-columns: 1fr;
             }
+
+            .lottie-anim {
+                width: 120px;
+                height: 120px;
+            }
+
+            .texto-carga {
+                font-size: 1.2rem;
+            }
         }
     </style>
     <script>
@@ -305,20 +501,30 @@
             container.appendChild(clone);
         }
 
-        // Función para agregar automáticamente la primera sección al cargar la página
-        document.addEventListener('DOMContentLoaded', function() {
-            // Agregar primera experiencia
-            addSection('experienciaContainer', 'experienciaTemplate');
+        function toggleSection(checkboxId, sectionId) {
+            const checkbox = document.getElementById(checkboxId);
+            const section = document.getElementById(sectionId);
+            const inputs = section.querySelectorAll('input, textarea, select');
             
-            // Agregar primera certificación
-            addSection('certificacionesContainer', 'certificacionTemplate');
-            
-            // Agregar primer idioma
-            addSection('idiomasContainer', 'idiomaTemplate');
-            
-            // Agregar primer estudio
-            addSection('estudiosContainer', 'estudioTemplate');
-        });
+            if (checkbox.checked) {
+                section.classList.add('disabled');
+                // Deshabilitar todos los inputs y remover required
+                inputs.forEach(input => {
+                    input.disabled = true;
+                    input.removeAttribute('required');
+                });
+            } else {
+                section.classList.remove('disabled');
+                // Habilitar todos los inputs y restaurar required donde corresponda
+                inputs.forEach(input => {
+                    input.disabled = false;
+                    // Solo restaurar required si está en un template que lo necesita
+                    if (input.hasAttribute('data-required')) {
+                        input.setAttribute('required', '');
+                    }
+                });
+            }
+        }
     </script>
 </head>
 <body>
@@ -328,6 +534,7 @@
             <h1 class="cv-title">Formulario de CV</h1>
             <p class="cv-subtitle">Completa tu información profesional para ccInterview</p>
         </div>
+
         <form class="cv-form" action="/cv/submit" method="post">
             <!-- INFORMACIÓN PERSONAL -->
             <div class="cv-section">
@@ -344,27 +551,36 @@
             <div class="cv-section">
                 <h2 class="cv-section-title">
                     <span class="section-icon">💼</span>
-                    Experiencia Profesional<span class="required-indicator">*</span>
+                    Experiencia Profesional
                 </h2>
-                <p class="section-required">* Al menos una experiencia es obligatoria</p>
-                <div id="experienciaContainer"></div>
-                <button type="button" class="add-button" onclick="addSection('experienciaContainer', 'experienciaTemplate')">
-                    <span>+</span> Añadir experiencia adicional
-                </button>
+                
+                <div class="no-option-container">
+                    <label class="no-option-checkbox">
+                        <input type="checkbox" id="no-experiencia" name="no_experiencia" onchange="toggleSection('no-experiencia', 'experiencia-content')">
+                        <span>📝 No tengo experiencia todavía</span>
+                    </label>
+                </div>
+
+                <div id="experiencia-content" class="section-content">
+                    <div id="experienciaContainer"></div>
+                    <button type="button" class="add-button" onclick="addSection('experienciaContainer', 'experienciaTemplate')">
+                        <span>+</span> Añadir experiencia
+                    </button>
+                </div>
             </div>
 
             <template id="experienciaTemplate">
                 <div class="dynamic-section">
                     <div class="form-row">
-                        <input type="text" name="exp_puesto" class="form-input" placeholder="Puesto" required>
-                        <input type="text" name="exp_empresa" class="form-input" placeholder="Empresa" required>
+                        <input type="text" name="exp_puesto" class="form-input" placeholder="Puesto" data-required>
+                        <input type="text" name="exp_empresa" class="form-input" placeholder="Empresa" data-required>
                     </div>
                     <div class="form-row">
-                        <input type="date" name="exp_fecha_inicio" class="form-input" placeholder="Fecha de inicio" required>
-                        <input type="date" name="exp_fecha_fin" class="form-input" placeholder="Fecha de fin" required>
+                        <input type="date" name="exp_fecha_inicio" class="form-input" placeholder="Fecha de inicio" data-required>
+                        <input type="date" name="exp_fecha_fin" class="form-input" placeholder="Fecha de fin" data-required>
                     </div>
                     <div class="form-group">
-                        <textarea name="exp_descripcion" class="form-input" placeholder="Descripción de responsabilidades y logros" required></textarea>
+                        <textarea name="exp_descripcion" class="form-input" placeholder="Descripción de responsabilidades y logros" data-required></textarea>
                     </div>
                 </div>
             </template>
@@ -373,20 +589,29 @@
             <div class="cv-section">
                 <h2 class="cv-section-title">
                     <span class="section-icon">🏆</span>
-                    Certificaciones<span class="required-indicator">*</span>
+                    Certificaciones
                 </h2>
-                <p class="section-required">* Al menos una certificación es obligatoria</p>
-                <div id="certificacionesContainer"></div>
-                <button type="button" class="add-button" onclick="addSection('certificacionesContainer', 'certificacionTemplate')">
-                    <span>+</span> Añadir certificación adicional
-                </button>
+                
+                <div class="no-option-container">
+                    <label class="no-option-checkbox">
+                        <input type="checkbox" id="no-certificaciones" name="no_certificaciones" onchange="toggleSection('no-certificaciones', 'certificaciones-content')">
+                        <span>🎯 No tengo certificaciones todavía</span>
+                    </label>
+                </div>
+
+                <div id="certificaciones-content" class="section-content">
+                    <div id="certificacionesContainer"></div>
+                    <button type="button" class="add-button" onclick="addSection('certificacionesContainer', 'certificacionTemplate')">
+                        <span>+</span> Añadir certificación
+                    </button>
+                </div>
             </div>
 
             <template id="certificacionTemplate">
                 <div class="dynamic-section">
                     <div class="form-row">
-                        <input type="text" name="cert_nombre" class="form-input" placeholder="Nombre de certificación" required>
-                        <input type="text" name="cert_emisor" class="form-input" placeholder="Emitido por" required>
+                        <input type="text" name="cert_nombre" class="form-input" placeholder="Nombre de certificación" data-required>
+                        <input type="text" name="cert_emisor" class="form-input" placeholder="Emitido por" data-required>
                     </div>
                 </div>
             </template>
@@ -415,146 +640,234 @@
 
             <!-- HABILIDADES TÉCNICAS -->
             <div class="cv-section">
-            <h2 class="cv-section-title">
-                <span class="section-icon">⚡</span>
-                Habilidades Técnicas
-            </h2>
+                <h2 class="cv-section-title">
+                    <span class="section-icon">⚡</span>
+                    Habilidades Técnicas
+                </h2>
 
-            <!-- Lenguajes -->
-            <div class="form-group">
-                <label for="select-lenguajes">Lenguajes de programación</label>
-                <select id="select-lenguajes" class="form-input">
-                <option value="" disabled selected>Selecciona un lenguaje</option>
-                <option>Python</option>
-                <option>JavaScript</option>
-                <option>Java</option>
-                <option>C#</option>
-                <option>Go</option>
-                </select>
-                <div class="custom-entry">
-                <input type="text" id="input-lenguajes" class="form-input" placeholder="Agregar otro lenguaje">
-                <button type="button" class="agr-btn" onclick="agregarPersonalizado('lenguajes')">Agregar</button>
+                <!-- Lenguajes -->
+                <div class="form-group">
+                    <label>Lenguajes de programación</label>
+                    <div class="custom-select-container">
+                        <div class="custom-select" id="select-lenguajes">
+                            <div class="select-header" onclick="toggleSelect('lenguajes')">
+                                <span>Seleccionar lenguajes de programación</span>
+                                <span class="select-arrow">▼</span>
+                            </div>
+                            <div class="select-search">
+                                <input type="text" class="search-input" placeholder="Buscar lenguaje..." onkeyup="filterOptions('lenguajes', this.value)">
+                            </div>
+                            <div class="select-options" id="options-lenguajes"></div>
+                        </div>
+                    </div>
+                    <div id="tags-lenguajes" class="tags-container"></div>
+                    <input type="hidden" name="lenguajes" id="hidden-lenguajes" required>
                 </div>
-                <div id="tags-lenguajes" class="tags-container"></div>
-                <input type="hidden" name="lenguajes" id="hidden-lenguajes" required>
-            </div>
 
-            <!-- Frameworks -->
-            <div class="form-group">
-                <label for="select-frameworks">Frameworks</label>
-                <select id="select-frameworks" class="form-input">
-                <option value="" disabled selected>Selecciona un framework</option>
-                <option>React</option>
-                <option>Vue</option>
-                <option>Django</option>
-                <option>Flask</option>
-                <option>Angular</option>
-                </select>
-                <div class="custom-entry">
-                <input type="text" id="input-frameworks" class="form-input" placeholder="Agregar otro framework">
-                <button type="button" class="agr-btn" onclick="agregarPersonalizado('frameworks')">Agregar</button>
+                <!-- Frameworks -->
+                <div class="form-group">
+                    <label>Frameworks</label>
+                    <div class="custom-select-container">
+                        <div class="custom-select" id="select-frameworks">
+                            <div class="select-header" onclick="toggleSelect('frameworks')">
+                                <span>Seleccionar frameworks</span>
+                                <span class="select-arrow">▼</span>
+                            </div>
+                            <div class="select-search">
+                                <input type="text" class="search-input" placeholder="Buscar framework..." onkeyup="filterOptions('frameworks', this.value)">
+                            </div>
+                            <div class="select-options" id="options-frameworks"></div>
+                        </div>
+                    </div>
+                    <div id="tags-frameworks" class="tags-container"></div>
+                    <input type="hidden" name="frameworks" id="hidden-frameworks">
                 </div>
-                <div id="tags-frameworks" class="tags-container"></div>
-                <input type="hidden" name="frameworks" id="hidden-frameworks">
-            </div>
 
-            <!-- Bases de Datos -->
-            <div class="form-group">
-                <label for="select-bases">Bases de datos</label>
-                <select id="select-bases" class="form-input">
-                <option value="" disabled selected>Selecciona una base de datos</option>
-                <option>PostgreSQL</option>
-                <option>MySQL</option>
-                <option>MongoDB</option>
-                <option>SQLite</option>
-                <option>Redis</option>
-                </select>
-                <div class="custom-entry">
-                <input type="text" id="input-bases" class="form-input" placeholder="Agregar otra base de datos">
-                <button type="button" class="agr-btn" onclick="agregarPersonalizado('bases')">Agregar</button>
+                <!-- Bases de Datos -->
+                <div class="form-group">
+                    <label>Bases de datos</label>
+                    <div class="custom-select-container">
+                        <div class="custom-select" id="select-bases">
+                            <div class="select-header" onclick="toggleSelect('bases')">
+                                <span>Seleccionar bases de datos</span>
+                                <span class="select-arrow">▼</span>
+                            </div>
+                            <div class="select-search">
+                                <input type="text" class="search-input" placeholder="Buscar base de datos..." onkeyup="filterOptions('bases', this.value)">
+                            </div>
+                            <div class="select-options" id="options-bases"></div>
+                        </div>
+                    </div>
+                    <div id="tags-bases" class="tags-container"></div>
+                    <input type="hidden" name="bases_datos" id="hidden-bases">
                 </div>
-                <div id="tags-bases" class="tags-container"></div>
-                <input type="hidden" name="bases_datos" id="hidden-bases">
-            </div>
 
-            <!-- Herramientas -->
-            <div class="form-group">
-                <label for="select-herramientas">Herramientas</label>
-                <select id="select-herramientas" class="form-input">
-                <option value="" disabled selected>Selecciona una herramienta</option>
-                <option>Git</option>
-                <option>Docker</option>
-                <option>VSCode</option>
-                <option>Figma</option>
-                <option>Postman</option>
-                </select>
-                <div class="custom-entry">
-                <input type="text" id="input-herramientas" class="form-input" placeholder="Agregar otra herramienta">
-                <button type="button" class="agr-btn" onclick="agregarPersonalizado('herramientas')">Agregar</button>
+                <!-- Herramientas -->
+                <div class="form-group">
+                    <label>Herramientas</label>
+                    <div class="custom-select-container">
+                        <div class="custom-select" id="select-herramientas">
+                            <div class="select-header" onclick="toggleSelect('herramientas')">
+                                <span>Seleccionar herramientas</span>
+                                <span class="select-arrow">▼</span>
+                            </div>
+                            <div class="select-search">
+                                <input type="text" class="search-input" placeholder="Buscar herramienta..." onkeyup="filterOptions('herramientas', this.value)">
+                            </div>
+                            <div class="select-options" id="options-herramientas"></div>
+                        </div>
+                    </div>
+                    <div id="tags-herramientas" class="tags-container"></div>
+                    <input type="hidden" name="herramientas" id="hidden-herramientas">
                 </div>
-                <div id="tags-herramientas" class="tags-container"></div>
-                <input type="hidden" name="herramientas" id="hidden-herramientas">
+
+                <script>
+                    // Datos ampliados para cada categoría
+                    const skillsData = {
+                        lenguajes: [
+                            'Python', 'JavaScript', 'Java', 'C#', 'C++', 'C', 'Go', 'Rust', 'Ruby', 'PHP',
+                            'TypeScript', 'Swift', 'Kotlin', 'Scala', 'R', 'MATLAB', 'Perl', 'Lua', 'Dart',
+                            'Objective-C', 'Visual Basic', 'F#', 'Clojure', 'Haskell', 'Erlang', 'Elixir',
+                            'Assembly', 'COBOL', 'Fortran', 'Pascal', 'Delphi', 'ActionScript', 'CoffeeScript',
+                            'Julia', 'Groovy', 'PowerShell', 'Bash', 'SQL', 'PL/SQL', 'T-SQL'
+                        ],
+                        frameworks: [
+                            'React', 'Vue.js', 'Angular', 'Django', 'Flask', 'FastAPI', 'Spring Boot', 'Express.js',
+                            'Node.js', 'Laravel', 'CodeIgniter', 'Symfony', 'Ruby on Rails', 'ASP.NET', 'ASP.NET Core',
+                            '.NET Framework', 'Blazor', 'Next.js', 'Nuxt.js', 'Svelte', 'SvelteKit', 'Gatsby',
+                            'Ember.js', 'Backbone.js', 'jQuery', 'Bootstrap', 'Tailwind CSS', 'Bulma', 'Foundation',
+                            'Materialize', 'Semantic UI', 'Ant Design', 'Material-UI', 'Chakra UI', 'Styled Components',
+                            'Sass', 'Less', 'Stylus', 'PostCSS', 'Webpack', 'Vite', 'Parcel', 'Rollup'
+                        ],
+                        bases: [
+                            'MySQL', 'PostgreSQL', 'MongoDB', 'SQLite', 'Redis', 'MariaDB', 'Oracle Database',
+                            'Microsoft SQL Server', 'IBM DB2', 'Cassandra', 'CouchDB', 'Neo4j', 'InfluxDB',
+                            'Amazon DynamoDB', 'Firebase Firestore', 'Elasticsearch', 'Apache Solr', 'Memcached',
+                            'Amazon RDS', 'Amazon Aurora', 'Google Cloud SQL', 'Azure SQL Database', 'Supabase',
+                            'PlanetScale', 'FaunaDB', 'RethinkDB', 'TimescaleDB', 'ClickHouse', 'Snowflake',
+                            'BigQuery', 'Amazon Redshift', 'Apache Spark', 'Apache Kafka', 'RabbitMQ'
+                        ],
+                        herramientas: [
+                            'Git', 'GitHub', 'GitLab', 'Bitbucket', 'Docker', 'Kubernetes', 'Jenkins', 'Travis CI',
+                            'CircleCI', 'GitLab CI/CD', 'GitHub Actions', 'Azure DevOps', 'VS Code', 'IntelliJ IDEA',
+                            'Eclipse', 'Sublime Text', 'Atom', 'Vim', 'Emacs', 'WebStorm', 'PyCharm', 'Android Studio',
+                            'Xcode', 'Visual Studio', 'Postman', 'Insomnia', 'Swagger', 'Figma', 'Adobe XD',
+                            'Sketch', 'Photoshop', 'Illustrator', 'Slack', 'Discord', 'Zoom', 'Microsoft Teams',
+                            'Jira', 'Trello', 'Asana', 'Notion', 'Confluence', 'AWS', 'Google Cloud Platform',
+                            'Microsoft Azure', 'Heroku', 'Vercel', 'Netlify', 'DigitalOcean', 'Terraform',
+                            'Ansible', 'Vagrant', 'VMware', 'VirtualBox', 'Nginx', 'Apache', 'Linux', 'Ubuntu',
+                            'CentOS', 'Windows Server', 'macOS', 'Chrome DevTools', 'Firefox DevTools'
+                        ]
+                    };
+
+                    const selectedSkills = {
+                        lenguajes: new Set(),
+                        frameworks: new Set(),
+                        bases: new Set(),
+                        herramientas: new Set()
+                    };
+
+                    function initializeSkillSelectors() {
+                        Object.keys(skillsData).forEach(category => {
+                            populateOptions(category);
+                            updateTags(category);
+                        });
+                    }
+
+                    function populateOptions(category) {
+                        const optionsContainer = document.getElementById(`options-${category}`);
+                        optionsContainer.innerHTML = '';
+                        
+                        skillsData[category].forEach(skill => {
+                            const option = document.createElement('div');
+                            option.className = 'select-option';
+                            option.textContent = skill;
+                            option.onclick = () => selectSkill(category, skill);
+                            optionsContainer.appendChild(option);
+                        });
+                    }
+
+                    function toggleSelect(category) {
+                        const selectElement = document.getElementById(`select-${category}`);
+                        const options = document.getElementById(`options-${category}`);
+                        const arrow = selectElement.querySelector('.select-arrow');
+                        
+                        // Cerrar otros selects abiertos
+                        document.querySelectorAll('.select-options.show').forEach(el => {
+                            if (el !== options) {
+                                el.classList.remove('show');
+                                el.parentElement.querySelector('.select-arrow').classList.remove('open');
+                            }
+                        });
+                        
+                        options.classList.toggle('show');
+                        arrow.classList.toggle('open');
+                    }
+
+                    function filterOptions(category, searchTerm) {
+                        const options = document.querySelectorAll(`#options-${category} .select-option`);
+                        const term = searchTerm.toLowerCase();
+                        
+                        options.forEach(option => {
+                            const text = option.textContent.toLowerCase();
+                            if (text.includes(term)) {
+                                option.classList.remove('hidden');
+                            } else {
+                                option.classList.add('hidden');
+                            }
+                        });
+                    }
+
+                    function selectSkill(category, skill) {
+                        if (!selectedSkills[category].has(skill)) {
+                            selectedSkills[category].add(skill);
+                            updateTags(category);
+                        }
+                        
+                        // Cerrar el select después de seleccionar
+                        const options = document.getElementById(`options-${category}`);
+                        const arrow = document.querySelector(`#select-${category} .select-arrow`);
+                        options.classList.remove('show');
+                        arrow.classList.remove('open');
+                        
+                        // Limpiar búsqueda
+                        const searchInput = document.querySelector(`#select-${category} .search-input`);
+                        searchInput.value = '';
+                        filterOptions(category, '');
+                    }
+
+                    function updateTags(category) {
+                        const container = document.getElementById(`tags-${category}`);
+                        const hiddenInput = document.getElementById(`hidden-${category}`);
+                        
+                        container.innerHTML = '';
+                        
+                        selectedSkills[category].forEach(skill => {
+                            const tag = document.createElement('span');
+                            tag.className = 'tag';
+                            tag.innerHTML = `${skill} <button type="button" class="remove-tag" onclick="removeSkill('${category}', '${skill}')">&times;</button>`;
+                            container.appendChild(tag);
+                        });
+                        
+                        hiddenInput.value = Array.from(selectedSkills[category]).join(',');
+                    }
+
+                    function removeSkill(category, skill) {
+                        selectedSkills[category].delete(skill);
+                        updateTags(category);
+                    }
+
+                    // Cerrar selects al hacer clic fuera
+                    document.addEventListener('click', function(event) {
+                        if (!event.target.closest('.custom-select')) {
+                            document.querySelectorAll('.select-options.show').forEach(el => {
+                                el.classList.remove('show');
+                                el.parentElement.querySelector('.select-arrow').classList.remove('open');
+                            });
+                        }
+                    });
+                </script>
             </div>
-            <script>
-  const data = {
-    lenguajes: new Set(),
-    frameworks: new Set(),
-    bases: new Set(),
-    herramientas: new Set()
-  };
-
-  const secciones = ["lenguajes", "frameworks", "bases", "herramientas"];
-
-  secciones.forEach(tipo => {
-    const select = document.getElementById(`select-${tipo}`);
-    select.addEventListener("change", () => {
-      const valor = select.value;
-      if (valor && !data[tipo].has(valor)) {
-        data[tipo].add(valor);
-        actualizarVista(tipo);
-      }
-      select.value = "";
-    });
-  });
-
-  function agregarPersonalizado(tipo) {
-    const input = document.getElementById(`input-${tipo}`);
-    const valor = input.value.trim();
-    if (valor && !data[tipo].has(valor)) {
-      data[tipo].add(valor);
-      input.value = "";
-      actualizarVista(tipo);
-    }
-  }
-
-  function actualizarVista(tipo) {
-    const contenedor = document.getElementById(`tags-${tipo}`);
-    const hiddenInput = document.getElementById(`hidden-${tipo}`);
-    contenedor.innerHTML = "";
-
-    data[tipo].forEach(valor => {
-      const tag = document.createElement("span");
-      tag.className = "tag";
-      tag.textContent = valor;
-
-      const closeBtn = document.createElement("button");
-      closeBtn.textContent = "×";
-      closeBtn.className = "remove-tag";
-      closeBtn.onclick = () => {
-        data[tipo].delete(valor);
-        actualizarVista(tipo);
-      };
-
-      tag.appendChild(closeBtn);
-      contenedor.appendChild(tag);
-    });
-
-    hiddenInput.value = Array.from(data[tipo]).join(",");
-  }
-</script>
-
-            </div>
-
 
             <!-- ESTUDIOS -->
             <div class="cv-section">
@@ -589,7 +902,9 @@
             </div>
         </form>
     </div>
-        <div id="pantalla-carga" class="pantalla-carga oculto">
+
+    <!-- Pantalla de carga -->
+    <div id="pantalla-carga" class="pantalla-carga oculto">
         <div class="loader-content">
             <div id="lottie" class="lottie-anim"></div>
             <p class="texto-carga">PROCESANDO...</p>
@@ -598,14 +913,21 @@
 
     <script src="https://unpkg.com/lottie-web/build/player/lottie.min.js"></script>
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
+        document.addEventListener('DOMContentLoaded', function() {
+            // Inicializar selectors de habilidades
+            initializeSkillSelectors();
+            
+            // Agregar el primer idioma y estudio automáticamente
+            addSection('idiomasContainer', 'idiomaTemplate');
+            addSection('estudiosContainer', 'estudioTemplate');
+
             // Inicializar animación Lottie
             lottie.loadAnimation({
                 container: document.getElementById("lottie"),
                 renderer: "svg",
                 loop: true,
                 autoplay: true,
-                path: "{{ url_for('static', path='animations/cargando.json') }}"  // Ajusta si el path es diferente
+                path: "{{ url_for('static', path='animations/cargando.json') }}"
             });
 
             // Captura de envío del formulario
@@ -619,8 +941,41 @@
                     return;
                 }
 
+                // Validación adicional antes de mostrar carga
+                const lenguajes = document.getElementById('hidden-lenguajes').value;
+                if (!lenguajes) {
+                    alert('Debes seleccionar al menos un lenguaje de programación');
+                    e.preventDefault();
+                    return;
+                }
+
+                // Validar experiencia o checkbox
+                const noExperiencia = document.getElementById('no-experiencia').checked;
+                const hayExperiencia = document.querySelectorAll('#experienciaContainer .dynamic-section').length > 0;
+                
+                if (!noExperiencia && !hayExperiencia) {
+                    alert('Debes agregar experiencia o marcar "No tengo experiencia todavía"');
+                    e.preventDefault();
+                    return;
+                }
+
+                // Validar certificaciones o checkbox
+                const noCertificaciones = document.getElementById('no-certificaciones').checked;
+                const hayCertificaciones = document.querySelectorAll('#certificacionesContainer .dynamic-section').length > 0;
+                
+                if (!noCertificaciones && !hayCertificaciones) {
+                    alert('Debes agregar certificaciones o marcar "No tengo certificaciones todavía"');
+                    e.preventDefault();
+                    return;
+                }
+
                 form.dataset.enviando = "true"; // Marca que ya se está enviando
                 loader.classList.remove("oculto"); // Muestra pantalla de carga
+                
+                // Deshabilitar el botón de envío
+                const submitBtn = form.querySelector('.submit-btn');
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Guardando...';
             });
         });
     </script>
