@@ -29,6 +29,17 @@ async def mostrar_formulario_nueva_entrevista(request: Request):
     payload = decode_token(token)
     if not payload:
         return RedirectResponse(url="/auth/login")
+    
+    usuario_id = payload.get("sub")
+    print("Payload del token:", payload)
+    
+    try:
+        usuario_obj_id = ObjectId(usuario_id)
+    except Exception:
+        usuario_obj_id = usuario_id
+    cv = await db["curriculum"].find_one({"usuario_id": usuario_obj_id})
+    print(cv)
+    nombre = cv["nombre"] if cv else "Sin nombre"
 
     config = await db["config"].find_one({"_id": "duraciones"})
     if not config:
@@ -40,7 +51,8 @@ async def mostrar_formulario_nueva_entrevista(request: Request):
 
     return templates.TemplateResponse("nueva.html", {
         "request": request,
-        "config": config
+        "config": config,
+        "nombre": nombre
     })
 
 @router.post("/nueva")
