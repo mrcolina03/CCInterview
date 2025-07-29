@@ -42,21 +42,57 @@ async def submit_form(
     frameworks: str = Form(""),
     bases_datos: str = Form(""),
     herramientas: str = Form(""),
-    exp_puesto: list[str] = Form(),
+    # Agregar los checkboxes como campos opcionales
+    no_experiencia: Optional[str] = Form(None),  # checkbox "No tengo experiencia"
+    no_certificaciones: Optional[str] = Form(None),  # checkbox "No tengo certificaciones"
+    # Campos de experiencia - ahora opcionales
+    exp_puesto: list[str] = Form(default=[]),
     exp_empresa: list[str] = Form(default=[]),
     exp_descripcion: list[str] = Form(default=[]),
+    exp_fecha_inicio: list[str] = Form(default=[]),
+    exp_fecha_fin: list[str] = Form(default=[]),
+    # Campos de certificaciones - ahora opcionales
     cert_nombre: list[str] = Form(default=[]),
     cert_emisor: list[str] = Form(default=[]),
+    # Resto de campos (estos siguen igual)
     idioma_nombre: list[str] = Form(default=[]),
     idioma_nivel: list[str] = Form(default=[]),
     estudio_institucion: list[str] = Form(default=[]),
     estudio_titulo: list[str] = Form(default=[]),
-    exp_fecha_inicio: list[str] = Form(default=[]),
-    exp_fecha_fin: list[str] = Form(default=[]),
     estudio_fecha_inicio: list[str] = Form(default=[]),
     estudio_fecha_fin: list[str] = Form(default=[])
 ):
     user_id = ObjectId(user["sub"])
+    
+    # VALIDACIÓN CONDICIONAL
+    # Si no marcó "no tengo experiencia" pero no tiene experiencia, error
+    if not no_experiencia and not exp_puesto:
+        raise HTTPException(
+            status_code=400, 
+            detail="Debes agregar al menos una experiencia o marcar 'No tengo experiencia todavía'"
+        )
+    
+    # Si no marcó "no tengo certificaciones" pero no tiene certificaciones, error
+    if not no_certificaciones and not cert_nombre:
+        raise HTTPException(
+            status_code=400, 
+            detail="Debes agregar al menos una certificación o marcar 'No tengo certificaciones todavía'"
+        )
+    
+    # Validación de idiomas (siempre requerido)
+    if not idioma_nombre:
+        raise HTTPException(
+            status_code=400, 
+            detail="Debes agregar al menos un idioma"
+        )
+    
+    # Validación de estudios (siempre requerido)
+    if not estudio_institucion:
+        raise HTTPException(
+            status_code=400, 
+            detail="Debes agregar al menos un estudio"
+        )
+
     existente = await db["curriculum"].find_one({"usuario_id": user_id})
 
     if existente:
@@ -66,13 +102,19 @@ async def submit_form(
             "frameworks": frameworks,
             "bases_datos": bases_datos,
             "herramientas": herramientas,
+            # Agregar los flags de "no tengo"
+            "no_experiencia": bool(no_experiencia),
+            "no_certificaciones": bool(no_certificaciones),
+            # Campos de experiencia
             "exp_puesto": exp_puesto,
             "exp_empresa": exp_empresa,
             "exp_fecha_inicio": exp_fecha_inicio,
             "exp_fecha_fin": exp_fecha_fin,
             "exp_descripcion": exp_descripcion,
+            # Campos de certificaciones
             "cert_nombre": cert_nombre,
             "cert_emisor": cert_emisor,
+            # Resto de campos
             "idioma_nombre": idioma_nombre,
             "idioma_nivel": idioma_nivel,
             "estudio_institucion": estudio_institucion,
@@ -88,9 +130,11 @@ async def submit_form(
     # Si no existe CV, sigue el flujo normal
     return await guardar_cv_y_perfil(
         request, user, nombre, lenguajes, frameworks, bases_datos, herramientas,
-        exp_puesto, exp_empresa, exp_fecha_inicio, exp_fecha_fin , exp_descripcion,
+        exp_puesto, exp_empresa, exp_fecha_inicio, exp_fecha_fin, exp_descripcion,
         cert_nombre, cert_emisor, idioma_nombre, idioma_nivel,
-        estudio_institucion, estudio_titulo, estudio_fecha_inicio, estudio_fecha_fin
+        estudio_institucion, estudio_titulo, estudio_fecha_inicio, estudio_fecha_fin,
+        # Agregar los nuevos parámetros
+        no_experiencia, no_certificaciones
     )
 
 @router.post("/confirmar")
@@ -102,6 +146,10 @@ async def confirmar_cv(
     frameworks: str = Form(""),
     bases_datos: str = Form(""),
     herramientas: str = Form(""),
+    # Agregar los checkboxes como campos opcionales
+    no_experiencia: Optional[str] = Form(None),  # checkbox "No tengo experiencia"
+    no_certificaciones: Optional[str] = Form(None),  # checkbox "No tengo certificaciones"
+    # Resto de campos
     exp_puesto: list[str] = Form(default=[]),
     exp_empresa: list[str] = Form(default=[]),
     exp_fecha_inicio: list[str] = Form(default=[]),
@@ -121,7 +169,9 @@ async def confirmar_cv(
         request, user, nombre, lenguajes, frameworks, bases_datos, herramientas,
         exp_puesto, exp_empresa, exp_fecha_inicio, exp_fecha_fin, exp_descripcion,
         cert_nombre, cert_emisor, idioma_nombre, idioma_nivel,
-        estudio_institucion, estudio_titulo, estudio_fecha_inicio, estudio_fecha_fin
+        estudio_institucion, estudio_titulo, estudio_fecha_inicio, estudio_fecha_fin,
+        # Agregar los nuevos parámetros
+        no_experiencia, no_certificaciones
     )
 
 
@@ -145,7 +195,7 @@ async def perfil_usuario(request: Request, user: dict = Depends(get_current_user
 async def guardar_cv_y_perfil(request, user, nombre, lenguajes, frameworks, bases_datos, herramientas,
                               exp_puesto, exp_empresa, exp_fecha_inicio, exp_fecha_fin, exp_descripcion,
                               cert_nombre, cert_emisor, idioma_nombre, idioma_nivel,
-                              estudio_institucion, estudio_titulo, estudio_fecha_inicio, estudio_fecha_fin):
+                              estudio_institucion, estudio_titulo, estudio_fecha_inicio, estudio_fecha_fin, no_experiencia = None, no_certificaciones= None):
     user_id = user["sub"]
 
     experiencia = [
