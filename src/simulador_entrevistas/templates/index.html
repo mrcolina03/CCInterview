@@ -228,17 +228,146 @@
                 max-width: none;
             }
         }
+
+        nav {
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border-color);
+    padding: var(--space-md) 0;
+    box-shadow: var(--shadow-sm);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(10px);
+}
+
+.nav-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 var(--space-lg);
+}
+
+nav ul {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: var(--space-xl);
+    margin: 0;
+    padding: 0;
+}
+
+nav li {
+    margin: 0;
+}
+
+nav a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 1rem;
+    padding: var(--space-sm) var(--space-md);
+    border-radius: var(--radius);
+    transition: all var(--transition);
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+}
+
+nav a:hover {
+    color: var(--accent-blue);
+    background: rgba(0, 212, 255, 0.1);
+    transform: translateY(-1px);
+}
+
+nav a:active {
+    transform: translateY(0);
+}
+
+nav a.active {
+    color: var(--accent-blue);
+    background: rgba(0, 212, 255, 0.1);
+}
+
+nav a.active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+    height: 2px;
+    background: var(--accent-blue);
+    border-radius: var(--radius-sm);
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+}
+
+.user-info .user-email {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.logout-btn {
+    padding: 0.4rem 0.8rem;
+    background-color: var(--accent-blue);
+    color: white;
+    text-decoration: none;
+    border-radius: var(--radius);
+    font-size: 0.85rem;
+    transition: background 0.3s;
+}
+
+.logout-btn:hover {
+    background-color: var(--accent-blue-dark);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .nav-container {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-md);
+    }
+
+    nav ul {
+        gap: var(--space-md);
+    }
+
+    .user-info {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
     </style>
 </head>
 
 <body>
     {% if user %}
-    <div class="dashboard-container">
-        <div class="top-bar">
-            <div class="user-info">
-                <div><strong>Usuario:</strong> <span class="user-email">{{ user.email }}</span></div>
-                <a href="/logout" class="logout-btn">Cerrar sesión</a>
-            </div>
+    <div class="">
+        <div class="">
+                <nav>
+                    <div class="nav-container">
+                        <ul>
+                            <li><a href="/">Inicio</a></li>
+                            <li><a href="/entrevista/nueva">Entrevistas</a></li>
+                            <li><a href="/cv/index">CV</a></li>
+                            <li><a href="/feedback/dashboard">Historial</a></li>
+                        </ul>
+                        <div class="user-info">
+                            <div><strong>Hola,</strong> <span class="user-email">{{ nombre }}</span></div>
+                            <a href="/logout" class="logout-btn">Cerrar sesión</a>
+                        </div>
+                    </div>
+                </nav>
         </div>
 
         <!-- Mensaje global para usuarios logueados -->
