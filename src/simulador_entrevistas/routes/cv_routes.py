@@ -13,7 +13,25 @@ templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates/cv"))
 
 @router.get("/create", response_class=HTMLResponse)
 async def form_page(request: Request):
-    return templates.TemplateResponse("create.html", {"request": request})
+    token = request.cookies.get("access_token")
+    if not token:
+        return RedirectResponse(url="/auth/login")
+
+    payload = decode_token(token)
+    if not payload:
+        return RedirectResponse(url="/auth/login")
+    
+    usuario_id = payload.get("sub")
+    print("Payload del token:", payload)
+    
+    try:
+        usuario_obj_id = ObjectId(usuario_id)
+    except Exception:
+        usuario_obj_id = usuario_id
+    cv = await db["curriculum"].find_one({"usuario_id": usuario_obj_id})
+    print(cv)
+    nombre = cv["nombre"] if cv else "Sin nombre"
+    return templates.TemplateResponse("create.html", {"request": request, "nombre": nombre})
 
 @router.post("/submit")
 async def submit_form(
@@ -112,6 +130,7 @@ async def perfil_usuario(request: Request, user: dict = Depends(get_current_user
     user_id = user["sub"]
 
     cv = await db["curriculum"].find_one({"usuario_id": ObjectId(user_id)})
+    nombre = cv["nombre"] if cv else "Sin nombre"
 
     
     if not cv:
@@ -119,7 +138,8 @@ async def perfil_usuario(request: Request, user: dict = Depends(get_current_user
 
     return templates.TemplateResponse("index.html", {
         "request": request,
-        "cv": cv
+        "cv": cv,
+        "nombre": nombre
     })
 
 async def guardar_cv_y_perfil(request, user, nombre, lenguajes, frameworks, bases_datos, herramientas,
