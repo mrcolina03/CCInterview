@@ -1,3 +1,4 @@
+from typing import Optional
 from fastapi import APIRouter, Request, Form, Depends, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
@@ -5,6 +6,8 @@ from bson import ObjectId
 from db.mongo import db
 from auth.dependencies import get_current_user
 from utils.perfil_usuario import crear_perfil_usuario, eliminar_perfil
+from bson import ObjectId
+from auth.auth import decode_token
 import os
 
 router = APIRouter()
@@ -195,26 +198,34 @@ async def perfil_usuario(request: Request, user: dict = Depends(get_current_user
 async def guardar_cv_y_perfil(request, user, nombre, lenguajes, frameworks, bases_datos, herramientas,
                               exp_puesto, exp_empresa, exp_fecha_inicio, exp_fecha_fin, exp_descripcion,
                               cert_nombre, cert_emisor, idioma_nombre, idioma_nivel,
-                              estudio_institucion, estudio_titulo, estudio_fecha_inicio, estudio_fecha_fin, no_experiencia = None, no_certificaciones= None):
+                              estudio_institucion, estudio_titulo, estudio_fecha_inicio, estudio_fecha_fin, 
+                              no_experiencia=None, no_certificaciones=None):
     user_id = user["sub"]
 
-    experiencia = [
-        {
-            "puesto": exp_puesto[i],
-            "empresa": exp_empresa[i],
-            "fecha_inicio": exp_fecha_inicio[i],
-            "fecha_fin": exp_fecha_fin[i],
-            "descripcion": exp_descripcion[i]
-        } for i in range(len(exp_puesto))
-    ]
+    # Manejar experiencia - solo crear si no marcó "No tengo experiencia"
+    experiencia = []
+    if not no_experiencia and exp_puesto:  # Si no marcó checkbox Y tiene datos
+        experiencia = [
+            {
+                "puesto": exp_puesto[i],
+                "empresa": exp_empresa[i],
+                "fecha_inicio": exp_fecha_inicio[i],
+                "fecha_fin": exp_fecha_fin[i],
+                "descripcion": exp_descripcion[i]
+            } for i in range(len(exp_puesto))
+        ]
 
-    certificaciones = [
-        {
-            "nombre": cert_nombre[i],
-            "emisor": cert_emisor[i]
-        } for i in range(len(cert_nombre))
-    ]
+    # Manejar certificaciones - solo crear si no marcó "No tengo certificaciones"
+    certificaciones = []
+    if not no_certificaciones and cert_nombre:  # Si no marcó checkbox Y tiene datos
+        certificaciones = [
+            {
+                "nombre": cert_nombre[i],
+                "emisor": cert_emisor[i]
+            } for i in range(len(cert_nombre))
+        ]
 
+    # Idiomas - siempre requeridos
     idiomas = [
         {
             "nombre": idioma_nombre[i],
@@ -222,6 +233,7 @@ async def guardar_cv_y_perfil(request, user, nombre, lenguajes, frameworks, base
         } for i in range(len(idioma_nombre))
     ]
 
+    # Estudios - siempre requeridos
     estudios = [
         {
             "institucion": estudio_institucion[i],
@@ -243,9 +255,15 @@ async def guardar_cv_y_perfil(request, user, nombre, lenguajes, frameworks, base
         "experiencia": experiencia,
         "certificaciones": certificaciones,
         "idiomas": idiomas,
-        "estudios": estudios
+        "estudios": estudios,
+        # Agregar flags para saber si marcó "No tengo"
+        "no_experiencia": bool(no_experiencia),
+        "no_certificaciones": bool(no_certificaciones)
     }
+    
     print(f"Curriculum a guardar: {curriculum}")
+    print(f"No experiencia: {bool(no_experiencia)}")
+    print(f"No certificaciones: {bool(no_certificaciones)}")
 
     try:
         perfil_usuario = await crear_perfil_usuario(curriculum)
@@ -264,6 +282,7 @@ async def guardar_cv_y_perfil(request, user, nombre, lenguajes, frameworks, base
 
     return templates.TemplateResponse("index.html", {
         "request": request,
-        "mensaje": "CV y perfil guardados exitosamente.",
-        "cv": curriculum
+        "mensaje": "CV y perfil guardado exitosamente.",
+        "cv": curriculum,
+        "nombre": nombre
     })
