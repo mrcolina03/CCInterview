@@ -350,6 +350,9 @@ async def mostrar_progreso(request: Request):
         usuario_obj_id = ObjectId(usuario_id)
     except Exception:
         usuario_obj_id = usuario_id
+    cv = await db["curriculum"].find_one({"usuario_id": usuario_obj_id})
+    print(cv)
+    nombre = cv["nombre"] if cv else "Sin nombre"
     
     # Obtener entrevistas ordenadas por fecha
     entrevistas = await db["entrevistas"].find(
@@ -458,5 +461,6 @@ async def mostrar_progreso(request: Request):
         "request": request,
         "usuario": payload,
         "datos_progreso": datos_progreso,
-        "estadisticas": estadisticas
+        "estadisticas": estadisticas,
+        "nombre": nombre
     })
