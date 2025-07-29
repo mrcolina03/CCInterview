@@ -6,6 +6,7 @@ from fastapi import APIRouter, Request, Path
 from db.mongo import db
 from services.llm import evaluar_respuesta_llm
 from utils.audio import evaluar_analisis_audio
+from pymongo import DESCENDING
 import os
 
 router = APIRouter()
@@ -165,7 +166,7 @@ async def mostrar_dashboard(request: Request):
         usuario_obj_id = ObjectId(usuario_id)
     except Exception:
         usuario_obj_id = usuario_id
-    entrevistas = await db["entrevistas"].find({"usuario_id": usuario_obj_id}).to_list(length=None)
+    entrevistas = await db["entrevistas"].find({"usuario_id": usuario_obj_id}).sort("fecha_inicio", DESCENDING).to_list(length=None)
     entrevistas_con_detalles = []
     cv = await db["curriculum"].find_one({"usuario_id": usuario_obj_id})
     print(cv)
