@@ -465,3 +465,253 @@ async def mostrar_progreso(request: Request):
         "estadisticas": estadisticas,
         "nombre": nombre
     })
+
+@router.get("/docente/dashboard", response_class=HTMLResponse)
+async def dashboard_docente(request: Request):
+    token = request.cookies.get("access_token")
+    if not token:
+        return RedirectResponse(url="/auth/login")
+    
+    from auth.auth import decode_token
+    payload = decode_token(token)
+    if not payload:
+        return RedirectResponse(url="/auth/login")
+    
+    # Verificar que el usuario es docente (añade esta lógica según tu sistema de roles)
+    # if payload.get("role") != "docente":
+    #     return RedirectResponse(url="/")
+    
+    # Obtener TODAS las entrevistas de todos los usuarios
+    entrevistas = await db["entrevistas"].find({}).sort("fecha_inicio", DESCENDING).to_list(length=None)
+    entrevistas_con_detalles = []
+    
+    for entrevista in entrevistas:
+        entrevista_id = entrevista["_id"]
+        usuario_id = entrevista["usuario_id"]
+        
+        # Obtener información del usuario/estudiante
+        cv = await db["curriculum"].find_one({"usuario_id": usuario_id})
+        nombre_estudiante = cv["nombre"] if cv else "Sin nombre"
+        
+        # Obtener preguntas y respuestas
+        preguntas = await db["preguntas"].find({"entrevista_id": entrevista_id}).to_list(length=None)
+        respuestas = await db["respuestas"].find({"entrevista_id": entrevista_id}).to_list(length=None)
+        
+        if not preguntas and not respuestas:
+            continue  # Saltar entrevistas sin datos reales
+        
+        # Crear mapas para facilitar búsquedas
+        preguntas_map = {str(p["_id"]): p for p in preguntas}
+        
+        total = len(preguntas)
+        codigos = sum(1 for p in preguntas if p.get("tipo") == "codigo")
+        tecnicas = sum(1 for p in preguntas if p.get("tipo") == "tecnica")
+        blandas = sum(1 for p in preguntas if p.get("tipo") == "blanda")
+        
+        # Calcular promedios por tipo de pregunta
+        puntajes_codigo = []
+        puntajes_tecnica = []
+        puntajes_blanda = []
+        
+        for respuesta in respuestas:
+            pregunta_id = str(respuesta.get("pregunta_id"))
+            pregunta = preguntas_map.get(pregunta_id)
+            
+            if not pregunta:
+                continue
+                
+            tipo_pregunta = pregunta.get("tipo")
+            
+            # Obtener puntaje según el tipo de evaluación
+            puntaje = None
+            if respuesta.get("evaluacion_llm"):
+                puntaje = respuesta["evaluacion_llm"].get("puntaje")
+            elif respuesta.get("puntaje_audio") is not None:
+                puntaje = respuesta["puntaje_audio"]
+            elif respuesta.get("feedback"):
+                puntaje = respuesta["feedback"].get("puntuacion")
+            
+            # Clasificar por tipo de pregunta
+            if puntaje is not None:
+                if tipo_pregunta == "codigo":
+                    puntajes_codigo.append(puntaje)
+                elif tipo_pregunta == "tecnica":
+                    puntajes_tecnica.append(puntaje)
+                elif tipo_pregunta == "blanda":
+                    puntajes_blanda.append(puntaje)
+        
+        # Calcular promedios
+        promedio_codigo = round(sum(puntajes_codigo) / len(puntajes_codigo), 1) if puntajes_codigo else "N/A"
+        promedio_tecnica = round(sum(puntajes_tecnica) / len(puntajes_tecnica), 1) if puntajes_tecnica else "N/A"
+        promedio_blanda = round(sum(puntajes_blanda) / len(puntajes_blanda), 1) if puntajes_blanda else "N/A"
+        
+        # Calcular promedio general
+        todos_puntajes = puntajes_codigo + puntajes_tecnica + puntajes_blanda
+        promedio_general = round(sum(todos_puntajes) / len(todos_puntajes), 1) if todos_puntajes else "N/A"
+        
+        entrevistas_con_detalles.append({
+            "_id": str(entrevista_id),
+            "usuario_id": str(usuario_id),
+            "nombre_estudiante": nombre_estudiante,
+            "fecha": entrevista.get("fecha_inicio").strftime("%Y-%m-%d %H:%M") if entrevista.get("fecha_inicio") else "Sin fecha",
+            "total": total,
+            "codigo": codigos,
+            "tecnica": tecnicas,
+            "blanda": blandas,
+            "estado": entrevista.get("estado", "desconocido"),
+            "promedio_codigo": promedio_codigo,
+            "promedio_tecnica": promedio_tecnica,
+            "promedio_blanda": promedio_blanda,
+            "promedio_general": promedio_general
+        })
+    
+    # Calcular estadísticas generales
+    totales = {
+        "total_entrevistas": len(entrevistas_con_detalles),
+        "total_codigo": sum(e["codigo"] for e in entrevistas_con_detalles),
+        "total_tecnica": sum(e["tecnica"] for e in entrevistas_con_detalles),
+        "total_blanda": sum(e["blanda"] for e in entrevistas_con_detalles),
+        "total_preguntas": sum(e["total"] for e in entrevistas_con_detalles),
+        "entrevistas_terminadas": sum(1 for e in entrevistas_con_detalles if e["estado"] == "terminada"),
+        "entrevistas_en_progreso": sum(1 for e in entrevistas_con_detalles if e["estado"] == "en_progreso")
+    }
+    
+    # Calcular promedios generales
+    todos_puntajes_codigo = [e["promedio_codigo"] for e in entrevistas_con_detalles if e["promedio_codigo"] != "N/A"]
+    todos_puntajes_tecnica = [e["promedio_tecnica"] for e in entrevistas_con_detalles if e["promedio_tecnica"] != "N/A"]
+    todos_puntajes_blanda = [e["promedio_blanda"] for e in entrevistas_con_detalles if e["promedio_blanda"] != "N/A"]
+    todos_puntajes_generales = [e["promedio_general"] for e in entrevistas_con_detalles if e["promedio_general"] != "N/A"]
+    
+    totales["promedio_general_codigo"] = round(sum(todos_puntajes_codigo) / len(todos_puntajes_codigo), 1) if todos_puntajes_codigo else "N/A"
+    totales["promedio_general_tecnica"] = round(sum(todos_puntajes_tecnica) / len(todos_puntajes_tecnica), 1) if todos_puntajes_tecnica else "N/A"
+    totales["promedio_general_blanda"] = round(sum(todos_puntajes_blanda) / len(todos_puntajes_blanda), 1) if todos_puntajes_blanda else "N/A"
+    totales["promedio_general_total"] = round(sum(todos_puntajes_generales) / len(todos_puntajes_generales), 1) if todos_puntajes_generales else "N/A"
+    
+    return templates.TemplateResponse("docente-dashboard.html", {
+        "request": request,
+        "usuario": payload,
+        "entrevistas": entrevistas_con_detalles,
+        "totales": totales
+    })
+
+@router.get("/docente/ver-entrevista/{entrevista_id}", response_class=HTMLResponse)
+async def ver_entrevista_docente(request: Request, entrevista_id: str = Path(...)):
+    token = request.cookies.get("access_token")
+    if not token:
+        return RedirectResponse(url="/auth/login")
+
+    from auth.auth import decode_token
+    payload = decode_token(token)
+    if not payload:
+        return RedirectResponse(url="/auth/login")
+
+    # Verificar que el usuario es docente
+    # if payload.get("role") != "docente":
+    #     return RedirectResponse(url="/")
+
+    # Verificar que la entrevista existe
+    entrevista = await db["entrevistas"].find_one({"_id": ObjectId(entrevista_id)})
+    if not entrevista:
+        return RedirectResponse(url="/docente/dashboard")
+
+    usuario_id = entrevista["usuario_id"]
+    
+    # Obtener información completa del CV del estudiante
+    cv = await db["curriculum"].find_one({"usuario_id": usuario_id})
+    if not cv:
+        cv = {"nombre": "Sin información", "habilidades_tecnicas": {}, "experiencia": [], "certificaciones": [], "idiomas": [], "estudios": []}
+
+    # Obtener todas las preguntas y respuestas
+    preguntas_codigo = await db["preguntas"].find({
+        "entrevista_id": ObjectId(entrevista_id),
+        "tipo": "codigo"
+    }).to_list(length=None)
+
+    preguntas_tecnicas = await db["preguntas"].find({
+        "entrevista_id": ObjectId(entrevista_id),
+        "tipo": "tecnica"
+    }).to_list(length=None)
+
+    preguntas_blandas = await db["preguntas"].find({
+        "entrevista_id": ObjectId(entrevista_id),
+        "tipo": "blanda"
+    }).to_list(length=None)
+
+    # Obtener todas las respuestas
+    all_pregunta_ids = [p["_id"] for p in preguntas_codigo + preguntas_tecnicas + preguntas_blandas]
+    respuestas = await db["respuestas"].find({
+        "pregunta_id": {"$in": all_pregunta_ids}
+    }).to_list(length=None)
+
+    # Separar respuestas por tipo
+    respuestas_codigo = [r for r in respuestas if any(p["_id"] == r["pregunta_id"] for p in preguntas_codigo)]
+    respuestas_tecnicas = [r for r in respuestas if any(p["_id"] == r["pregunta_id"] for p in preguntas_tecnicas)]
+    respuestas_blandas = [r for r in respuestas if any(p["_id"] == r["pregunta_id"] for p in preguntas_blandas)]
+
+    # Calcular estadísticas de la entrevista
+    total_preguntas = len(preguntas_codigo) + len(preguntas_tecnicas) + len(preguntas_blandas)
+    
+    # Calcular promedios
+    def calcular_promedio_respuestas(respuestas_tipo):
+        puntajes = []
+        for respuesta in respuestas_tipo:
+            puntaje = None
+            if respuesta.get("evaluacion_llm"):
+                puntaje = respuesta["evaluacion_llm"].get("puntaje")
+            elif respuesta.get("puntaje_audio") is not None:
+                puntaje = respuesta["puntaje_audio"]
+            elif respuesta.get("feedback"):
+                puntaje = respuesta["feedback"].get("puntuacion")
+            
+            if puntaje is not None:
+                puntajes.append(puntaje)
+        
+        return round(sum(puntajes) / len(puntajes), 1) if puntajes else "N/A"
+
+    promedio_codigo = calcular_promedio_respuestas(respuestas_codigo)
+    promedio_tecnicas = calcular_promedio_respuestas(respuestas_tecnicas)
+    promedio_blandas = calcular_promedio_respuestas(respuestas_blandas)
+
+    # Promedio general
+    todos_puntajes = []
+    for respuesta in respuestas:
+        puntaje = None
+        if respuesta.get("evaluacion_llm"):
+            puntaje = respuesta["evaluacion_llm"].get("puntaje")
+        elif respuesta.get("puntaje_audio") is not None:
+            puntaje = respuesta["puntaje_audio"]
+        elif respuesta.get("feedback"):
+            puntaje = respuesta["feedback"].get("puntuacion")
+        
+        if puntaje is not None:
+            todos_puntajes.append(puntaje)
+    
+    promedio_general = round(sum(todos_puntajes) / len(todos_puntajes), 1) if todos_puntajes else "N/A"
+
+    estadisticas_entrevista = {
+        "total_preguntas": total_preguntas,
+        "preguntas_codigo": len(preguntas_codigo),
+        "preguntas_tecnicas": len(preguntas_tecnicas),
+        "preguntas_blandas": len(preguntas_blandas),
+        "promedio_codigo": promedio_codigo,
+        "promedio_tecnicas": promedio_tecnicas,
+        "promedio_blandas": promedio_blandas,
+        "promedio_general": promedio_general,
+        "fecha": entrevista.get("fecha_inicio").strftime("%Y-%m-%d %H:%M") if entrevista.get("fecha_inicio") else "Sin fecha",
+        "estado": entrevista.get("estado", "desconocido")
+    }
+
+    return templates.TemplateResponse("docente-ver-entrevista.html", {
+        "request": request,
+        "usuario": payload,
+        "entrevista": entrevista,
+        "cv": cv,
+        "estadisticas": estadisticas_entrevista,
+        "preguntas_codigo": preguntas_codigo,
+        "preguntas_tecnicas": preguntas_tecnicas,
+        "preguntas_blandas": preguntas_blandas,
+        "respuestas_codigo": respuestas_codigo,
+        "respuestas_tecnicas": respuestas_tecnicas,
+        "respuestas_blandas": respuestas_blandas
+    })
+
