@@ -441,17 +441,17 @@ async def mostrar_progreso(request: Request):
     
     # Calcular tendencias
     if estadisticas["promedios_codigo"]:
-        estadisticas["tendencia_codigo"] = "📈" if len(estadisticas["promedios_codigo"]) > 1 and estadisticas["promedios_codigo"][-1] > estadisticas["promedios_codigo"][0] else "📊"
+        estadisticas["tendencia_codigo"] = "" if len(estadisticas["promedios_codigo"]) > 1 and estadisticas["promedios_codigo"][-1] > estadisticas["promedios_codigo"][0] else ""
         estadisticas["mejor_codigo"] = max(estadisticas["promedios_codigo"])
         estadisticas["promedio_general_codigo"] = round(sum(estadisticas["promedios_codigo"]) / len(estadisticas["promedios_codigo"]), 1)
     
     if estadisticas["promedios_tecnica"]:
-        estadisticas["tendencia_tecnica"] = "📈" if len(estadisticas["promedios_tecnica"]) > 1 and estadisticas["promedios_tecnica"][-1] > estadisticas["promedios_tecnica"][0] else "📊"
+        estadisticas["tendencia_tecnica"] = "" if len(estadisticas["promedios_tecnica"]) > 1 and estadisticas["promedios_tecnica"][-1] > estadisticas["promedios_tecnica"][0] else ""
         estadisticas["mejor_tecnica"] = max(estadisticas["promedios_tecnica"])
         estadisticas["promedio_general_tecnica"] = round(sum(estadisticas["promedios_tecnica"]) / len(estadisticas["promedios_tecnica"]), 1)
     
     if estadisticas["promedios_blanda"]:
-        estadisticas["tendencia_blanda"] = "📈" if len(estadisticas["promedios_blanda"]) > 1 and estadisticas["promedios_blanda"][-1] > estadisticas["promedios_blanda"][0] else "📊"
+        estadisticas["tendencia_blanda"] = "" if len(estadisticas["promedios_blanda"]) > 1 and estadisticas["promedios_blanda"][-1] > estadisticas["promedios_blanda"][0] else ""
         estadisticas["mejor_blanda"] = max(estadisticas["promedios_blanda"])
         estadisticas["promedio_general_blanda"] = round(sum(estadisticas["promedios_blanda"]) / len(estadisticas["promedios_blanda"]), 1)
     

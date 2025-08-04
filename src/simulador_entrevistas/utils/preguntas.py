@@ -16,7 +16,7 @@ async def generar_y_guardar_pregunta(db, entrevista: dict, tipo: str, habilidad:
     nivel = habilidad_data.get("nivel_esperado", "basico")
     clasificacion = perfil.get("clasificacion_junior", "desconocido")
 
-    for intento in range(5):
+    for intento in range(10):
         print(f"Intento {intento + 1} de generación")
         texto_pregunta = await generar_pregunta_llm(clasificacion, tipo, habilidad, nivel, subtematica)
         print("Texto generado:", texto_pregunta)

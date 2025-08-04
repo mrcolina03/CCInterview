@@ -33,7 +33,7 @@ async def form_page(request: Request):
         usuario_obj_id = usuario_id
     cv = await db["curriculum"].find_one({"usuario_id": usuario_obj_id})
     print(cv)
-    nombre = cv["nombre"] if cv else "Sin nombre"
+    nombre = cv["nombre"] if cv else ""
     return templates.TemplateResponse("create.html", {"request": request, "nombre": nombre})
 
 @router.post("/submit")
@@ -183,7 +183,7 @@ async def perfil_usuario(request: Request, user: dict = Depends(get_current_user
     user_id = user["sub"]
 
     cv = await db["curriculum"].find_one({"usuario_id": ObjectId(user_id)})
-    nombre = cv["nombre"] if cv else "Sin nombre"
+    nombre = cv["nombre"] if cv else ""
 
     
     if not cv:
@@ -282,7 +282,7 @@ async def guardar_cv_y_perfil(request, user, nombre, lenguajes, frameworks, base
 
     return templates.TemplateResponse("index.html", {
         "request": request,
-        "mensaje": "CV y perfil guardado exitosamente.",
+        "mensaje": "CV guardado correctamente",
         "cv": curriculum,
         "nombre": nombre
     })

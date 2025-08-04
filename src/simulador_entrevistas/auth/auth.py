@@ -7,7 +7,7 @@ import os
 # Configuración del token
 SECRET_KEY = os.getenv("SECRET_KEY", "changeme")
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60
+ACCESS_TOKEN_EXPIRE_MINUTES = 120
 
 # Contexto de hashing
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -202,58 +203,124 @@
                 gap: var(--space-xs);
             }
         }
+
+        .error-message {
+            background: var(--bg-error);
+            color: var(--text-error);
+            padding: var(--space-md);
+            border-radius: var(--radius-sm);
+            margin-bottom: var(--space-lg);
+            text-align: center;
+            font-size: 0.95rem;
+        }
+
+        .alerta_carga {
+            background: crimson;
+            color: var(--text-warning);
+            padding: var(--space-md);
+            border-radius: var(--radius-sm);
+            margin-bottom: var(--space-lg);
+            text-align: center;
+            font-size: 0.95rem;
+        }
+
+        #loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #1A1A1A;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            flex-direction: column;
+        }
     </style>
 </head>
+
 <body>
     {% include "_navbar.html" %}
+    {% if mensaje %}
+    <div class="error-message">
+        <p>{{ mensaje }}</p>
+    </div>
+    {% endif %}
+
     <div class="new-interview-container">
         <div class="">
             <div class="form-header">
                 <h2 class="form-title">
-                    <span>🎤</span>
-                    <span>Crear nueva entrevista</span>
+                    <span></span>
+                    <span>Empezar nueva entrevista</span>
                 </h2>
-                <p class="form-subtitle">
-                    Configura tu entrevista técnica personalizada y comienza a mejorar tus habilidades
-                </p>
+
             </div>
+
+
 
             <form method="post" action="/entrevista/nueva">
                 <div class="form-section">
-                    <label for="duracion" class="form-label">⏱️ Duración de la entrevista:</label>
+                    <label for="duracion" class="form-label">Duración de la entrevista:</label>
                     <select name="duracion" id="duracion" class="form-select" required>
-                        {% for clave, valores in config.items() if clave != "_id" %}
-                            <option value="{{ clave }}">
-                                Entrevista {{ clave }} ({{ valores.minutos }} min)
-                            </option>
-                        {% endfor %}
+                        <option value="20">20 minutos</option>
+                        <option value="30" disabled>30 minutos</option>
+                        <option value="45" disabled>45 minutos</option>
+
                     </select>
                     <div class="duration-info">
                         <span class="info-icon">ℹ️</span>
-                        <span>Selecciona la duración que mejor se adapte a tu disponibilidad</span>
+                        <span>Por el momento, solo está habilitado el tiempo de 20 minutos</span>
                     </div>
                 </div>
 
                 <div class="form-section">
-                    <label for="modo" class="form-label">🎯 Modo de entrevista:</label>
+                    <label for="modo" class="form-label">Modo de entrevista:</label>
                     <select name="modo" id="modo" class="form-select" required>
-                        <option value="mixto">🔀 Mixto (técnica y blanda)</option>
-                        <option value="solo tecnica">⚡ Solo técnica</option>
-                        <option value="solo blanda">💬 Solo blanda</option>
-                        <option value="codigo">💻 Código</option>
+                        <option value="mixto">Normal</option>
+                        <option value="tecnico" disabled>Habilidades Técnicas</option>
+                        <option value="blando" disabled>Habilidades Blandas</option>
+
                     </select>
                     <div class="mode-info">
-                        <span class="info-icon">💡</span>
-                        <span>Elige el tipo de entrevista que quieres practicar</span>
+                        <span class="info-icon">ℹ️</span>
+                        <span>Por el momento, solo está habilitado el modo normal (Preguntas de habilidades técnicas,
+                            blandas y problemas de codificación)</span>
                     </div>
+                </div>
+                <div class="alerta_carga">
+                    <p>La primera pregunta puede tardar en aparecer. Por favor, ten paciencia.</p>
                 </div>
 
                 <button type="submit" class="start-interview-btn">
-                    <span>🚀</span>
+
                     <span>Comenzar entrevista</span>
                 </button>
             </form>
         </div>
     </div>
+    <div id="loading-overlay" style="display: none;">
+        <div class="loading-content">
+            <img src="/static/img/loading.gif" alt="Cargando..." class="loading-gif">
+            <p style="color: #20B8FD; font-size: large; font-weight: bold;">Generando preguntas con Inteligencia Artificial...</p>
+        </div>
+    </div>
 </body>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.querySelector('form');
+    const submitBtn = form.querySelector('button[type="submit"]');
+
+    form.addEventListener('submit', function (e) {
+        // Desactivar el botón para evitar múltiples envíos
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = "Iniciando...";
+
+        // Mostrar el overlay de carga
+        document.getElementById('loading-overlay').style.display = 'flex';
+    });
+});
+</script>
+
 </html>

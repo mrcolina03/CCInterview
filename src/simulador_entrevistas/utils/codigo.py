@@ -38,6 +38,7 @@ async def evaluar_respuesta_codigo(db, respuesta_id: str):
         return {"error": "Respuesta no encontrada"}
 
     lenguaje_nombre = respuesta["lenguaje"].lower()
+    
     if not LANGUAGE_MAP:
         await inicializar_mapeo_lenguajes()
         print("Mapeo de lenguajes inicializado")
@@ -49,8 +50,10 @@ async def evaluar_respuesta_codigo(db, respuesta_id: str):
     print(f"Lenguaje solicitado: {lenguaje_nombre} (ID: {lenguaje_id})")
     if not lenguaje_id:
         return {"error": f"Lenguaje '{lenguaje_nombre}' no soportado por Judge0"}
-
-    ejecucion = await ejecutar_codigo_judge0(respuesta["respuesta"], lenguaje_id)
+    
+    if lenguaje_nombre != "1. otro":
+            print("Lenguaje 'Otro' no soportado por Judge0")
+            ejecucion = await ejecutar_codigo_judge0(respuesta["respuesta"], lenguaje_id)
 
     salida = ejecucion.get("stdout")
     error = ejecucion.get("stderr") or ejecucion.get("compile_output")

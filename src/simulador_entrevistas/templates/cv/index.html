@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -405,10 +406,11 @@
         }
     </style>
 </head>
+
 <body>
     {% include "_navbar.html" %}
     <!-- Mensaje global (posición superior) -->
-    {% if mensaje and mensaje != 'CV y perfil guardados exitosamente.' %}
+    {% if mensaje and mensaje != 'CV guardado correctamente' %}
     <div class="global-message-cv">
         <div class="alert alert-error">
             {{ mensaje }}
@@ -416,7 +418,7 @@
     </div>
     {% endif %}
 
-    {% if mensaje and mensaje == 'CV y perfil guardados exitosamente.' %}
+    {% if mensaje and mensaje == 'CV guardado correctamente' %}
     <div class="global-message-cv">
         <div class="alert alert-info">
             {{ mensaje }}
@@ -443,19 +445,21 @@
                     <div class="skills-grid">
                         <div class="skill-item">
                             <div class="skill-label">Lenguajes</div>
-                            <div class="skill-value">{{ cv.habilidades_tecnicas.lenguajes }}</div>
+
+                            {{ cv.habilidades_tecnicas.lenguajes.split(',') | map('trim') | join(', ') }}
+
                         </div>
                         <div class="skill-item">
                             <div class="skill-label">Frameworks</div>
-                            <div class="skill-value">{{ cv.habilidades_tecnicas.frameworks }}</div>
+                            <div class="skill-value">{{ cv.habilidades_tecnicas.frameworks.split(',') | map('trim') | join(', ') }}</div>
                         </div>
                         <div class="skill-item">
                             <div class="skill-label">Bases de Datos</div>
-                            <div class="skill-value">{{ cv.habilidades_tecnicas.bases_datos }}</div>
+                            <div class="skill-value">{{ cv.habilidades_tecnicas.bases_datos.split(',') | map('trim') | join(', ') }}</div>
                         </div>
                         <div class="skill-item">
                             <div class="skill-label">Herramientas</div>
-                            <div class="skill-value">{{ cv.habilidades_tecnicas.herramientas }}</div>
+                            <div class="skill-value">{{ cv.habilidades_tecnicas.herramientas.split(',') | map('trim') | join(', ') }}</div>
                         </div>
                     </div>
                 </div>
@@ -527,7 +531,7 @@
             </div>
         </div>
     </div>
-     <!-- Pantalla de carga -->
+    <!-- Pantalla de carga -->
     <div id="pantalla-carga" class="pantalla-carga oculto">
         <div class="loader-content">
             <div id="lottie" class="lottie-anim"></div>
@@ -564,4 +568,5 @@
         });
     </script>
 </body>
+
 </html>

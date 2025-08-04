@@ -353,8 +353,8 @@
     
     <div class="progress-container">
         <div class="progress-header">
-            <h1 class="progress-title">📊 Progreso de Entrevistas</h1>
-            <p class="progress-subtitle">Seguimiento de tu evolución en cada categoría</p>
+            <h1 class="progress-title">Progreso de Entrevistas</h1>
+            <p class="progress-subtitle">Sigue tu evolución en cada categoría</p>
         </div>
 
         {% if datos_progreso %}
@@ -362,13 +362,13 @@
             <div class="stats-grid">
                 <div class="stat-card general">
                     <div class="stat-number general">{{ estadisticas.total_entrevistas }}</div>
-                    <div class="stat-label">Total Entrevistas</div>
+                    <div class="stat-label">Total de entrevistas realizadas</div>
                 </div>
                 
                 {% if estadisticas.promedio_general_codigo %}
                 <div class="stat-card codigo">
                     <div class="stat-number codigo">{{ estadisticas.promedio_general_codigo }}</div>
-                    <div class="stat-label">Promedio Código</div>
+                    <div class="stat-label">Promedio de Problemas de Código</div>
                     <div class="stat-trend">{{ estadisticas.tendencia_codigo }}</div>
                 </div>
                 {% endif %}
@@ -376,7 +376,7 @@
                 {% if estadisticas.promedio_general_tecnica %}
                 <div class="stat-card tecnica">
                     <div class="stat-number tecnica">{{ estadisticas.promedio_general_tecnica }}</div>
-                    <div class="stat-label">Promedio Técnica</div>
+                    <div class="stat-label">Promedio de Preguntas de Habilidades Técnicos</div>
                     <div class="stat-trend">{{ estadisticas.tendencia_tecnica }}</div>
                 </div>
                 {% endif %}
@@ -384,7 +384,7 @@
                 {% if estadisticas.promedio_general_blanda %}
                 <div class="stat-card blanda">
                     <div class="stat-number blanda">{{ estadisticas.promedio_general_blanda }}</div>
-                    <div class="stat-label">Promedio Blandas</div>
+                    <div class="stat-label">Promedio de Preguntas de Habilidades Blandas</div>
                     <div class="stat-trend">{{ estadisticas.tendencia_blanda }}</div>
                 </div>
                 {% endif %}
@@ -393,7 +393,7 @@
             <!-- Gráfico de líneas -->
             <div class="charts-container">
                 <div class="chart-card">
-                    <h3 class="chart-title">📈 Evolución de Puntajes por Categoría</h3>
+                    <h3 class="chart-title">Evolución de Puntajes por Categoría</h3>
                     <canvas id="progressChart" class="chart-canvas"></canvas>
                 </div>
             </div>
@@ -402,7 +402,7 @@
         {% else %}
             <div class="data-table-container">
                 <div class="empty-state">
-                    <div class="empty-state-icon">📊</div>
+                    <div class="empty-state-icon"></div>
                     <div class="empty-state-message">No hay datos de progreso disponibles</div>
                     <div class="empty-state-submessage">Completa algunas entrevistas para ver tu evolución aquí</div>
                 </div>

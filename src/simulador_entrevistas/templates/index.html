@@ -358,12 +358,12 @@ nav a.active::after {
                     <div class="nav-container">
                         <ul>
                             <li><a href="/">Inicio</a></li>
-                            <li><a href="/entrevista/nueva">Entrevistas</a></li>
-                            <li><a href="/cv/index">CV</a></li>
+                            <li><a href="/entrevista/nueva">Nueva Entrevista</a></li>
+                            <li><a href="/cv/index">mi CV</a></li>
                             <li><a href="/feedback/dashboard">Historial</a></li>
                         </ul>
                         <div class="user-info">
-                            <div><strong>Hola,</strong> <span class="user-email">{{ nombre }}</span></div>
+                            <div><strong>Hola,</strong> <span class="user-email">{% if nombre is not none %}{{ nombre }}{% endif %}</span></div>
                             <a href="/logout" class="logout-btn">Cerrar sesión</a>
                         </div>
                     </div>
@@ -382,7 +382,7 @@ nav a.active::after {
         <div class="main-content">
             <div class="welcome-section">
                 <h1 class="welcome-title">Bienvenido a ccInterview</h1>
-                <p class="welcome-subtitle">Tu plataforma completa para dominar las entrevistas técnicas</p>
+                <p class="welcome-subtitle">Un sistema completo para dominar entrevistas laborales</p>
             </div>
 
             {% if user.rol == 'admin' %}
@@ -419,11 +419,14 @@ nav a.active::after {
             <div class="dashboard-grid">
                 <div class="dashboard-card">
                     <div class="card-icon">📄</div>
-                    <h3 class="card-title">Mi Currículum</h3>
-                    <p class="card-description">Crea y gestiona tu CV para las entrevistas técnicas.</p>
-                    <a href="/cv/create" class="card-link">Llenar formulario →</a>
+                    <h3 class="card-title">Mi Currículum Vitae</h3>
+                    <p class="card-description">Completa y gestiona tu CV para empezar entrevistas.</p>
+                    {% if not nombre %}
+                    <a href="/cv/create" class="card-link">Registrar CV →</a>
                     <br><br>
+                    {% else %}
                     <a href="/cv/index" class="card-link">Ver mi CV →</a>
+                    {% endif %}
                 </div>
 
                 <div class="dashboard-card">
@@ -471,7 +474,7 @@ nav a.active::after {
                 <h1 class="text-4xl font-semibold text-primary mb-3">Bienvenido a</h1>
                 <h2 class="text-5xl font-light text-gradient-animated mb-4">ccInterview</h2>
                 <p class="text-lg text-secondary">
-                    Plataforma moderna para entrevistas técnicas. 
+                    Sistema moderno para entrevistas completas. 
                     Conecta, practica y domina tus habilidades de programación.
                 </p>
             </div>

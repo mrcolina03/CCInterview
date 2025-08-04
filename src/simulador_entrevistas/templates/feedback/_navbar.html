@@ -121,15 +121,16 @@ nav a.active::after {
 </style>
 
 <nav>
-    <div class="nav-container">
+     <div class="nav-container">
         <ul>
             <li><a href="/">Inicio</a></li>
-            <li><a href="/entrevista/nueva">Entrevistas</a></li>
-            <li><a href="/cv/index">CV</a></li>
+            <li><a href="/entrevista/nueva">Nueva Entrevista</a></li>
+            <li><a href="/cv/index">mi CV</a></li>
             <li><a href="/feedback/dashboard">Historial</a></li>
         </ul>
         <div class="user-info">
-            <div><strong>Hola,</strong> <span class="user-email">{{ nombre }}</span></div>
+            <div><strong>Hola,</strong> <span class="user-email">{% if nombre is not none %}{{ nombre }}{% endif
+                    %}</span></div>
             <a href="/logout" class="logout-btn">Cerrar sesión</a>
         </div>
     </div>

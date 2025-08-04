@@ -250,12 +250,17 @@ Lenguaje a evaluar: {lenguaje}
 
 Genera un problema de programación práctico, claro y sencillo, que pueda resolverse en menos de 10 minutos, del estilo de entrevista técnica.
 
-El problema debe poder ejecutarse directamente, y el usuario deberá imprimir en consola el resultado con la función correspondiente (por ejemplo, `print()` en Python).
+El problema debe poder ejecutarse directamente.
+
+ESPECIFICACIONES PARA EL ENUNCIADO:
+- Se debe especificar al usuario que no la resolución no debe incluir ningún tipo de entrada por teclado, ya que Judge0 no permite entradas interactivas.
+- La resolución será compilada y ejecutada en Judge0, por lo que el enunciado le debe especificar al usuario que debe incluir la impresión del resultado. Por ejemplo, si el problema es calcular la suma de dos números, el usuario debe imprimir el resultado con `print(suma)`.
+- El enunciado le debe aclarar al usuario que debe poner un ejemplo de setear valores de ejemplo en el llamado a las funciones para probar la salida.
 
 Devuelve un JSON con el siguiente formato:
 
 {{
-  "problema": "Enunciado claro del problema"
+  "problema": "Enunciado claro del problema especificando lo mencionado anteriormente",
 }}
 
 Evita explicaciones adicionales, solo el JSON.
@@ -287,7 +292,7 @@ Respuesta del candidato:
 "{respuesta_usuario}"
 
 Evalúa de forma objetiva la respuesta. Devuelve solo un JSON con los siguientes campos:
-- "puntaje": número entero entre 0 y 10 (0 = muy mala o no responde, 10 = excelente)
+- "puntaje": número entero entre 0 y 10 (0 = muy mala o no responde, 10 = excelente). Si la respuesta está en blanco, o no tiene sentido, la calificación es cero estrictamente. Por ejemplo: Subtítulos realizados por la comunidad de Amara.org no tiene sentido y debe ser calificado con cero.
 - "justificacion": texto explicando por qué se asignó ese puntaje
 - "sugerencias": texto con recomendaciones claras y breves para mejorar esa respuesta
 
@@ -334,6 +339,10 @@ Salida estándar:
 Errores de compilación o ejecución:
 {error or 'Ninguno'}
 ---
+
+Ten en cuenta que el código fue ejecutado en Judge0, por tanto, si es un lenguaje que no está disponible en Judge0, debes ignorar los parámetros de estado de compilación, salida y error, y solo centrarte en la lógica del código. 
+Si el lenguaje sí es compatible con Judge0 y no se detallan los resultados de la ejecución de judge0, debes bajar la puntuación, pero no cero, ya que el usuario puede haber hecho un esfuerzo por resolver el problema.
+Ten en cuenta que el Judge0 no permite entradas interactivas, por lo que no puedes recomendar al usuario que use entradas por teclado como parte del feedback..
 
 Evalúa la solución del usuario en una escala del 1 al 10.
 Considera:

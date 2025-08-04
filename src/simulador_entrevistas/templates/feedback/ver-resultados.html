@@ -375,7 +375,7 @@
     {% include "_navbar.html" %}
     <div class="results-container">
         <div class="results-content">
-            <h1 class="results-title">📊 Resultados de la Entrevista</h1>
+            <h1 class="results-title">Resultados de la Entrevista</h1>
 
             {% for pregunta in preguntas %}
             <div class="question-card">
@@ -386,7 +386,7 @@
                     <div class="question-meta">
                         <div class="meta-item">
                             <span class="meta-label">Tipo:</span>
-                            <span class="question-type-badge">{{ pregunta.tipo|capitalize }}</span>
+                            <span class="question-type-badge">{% if pregunta.tipo == 'codigo' %}Código{% elif pregunta.tipo == 'tecnica' %}Técnica{% elif pregunta.tipo == 'blanda' %}Blanda{% elif pregunta.tipo == 'general' %}General{% endif %}</span>
                         </div>
                     </div>
                     <div class="question-text">{{ pregunta.pregunta }}</div>
@@ -397,7 +397,7 @@
                 {% if respuesta %}
                 <div class="response-section">
                     <div class="response-header">
-                        <span>💬</span>
+                        <span></span>
                         <span>Tu respuesta:</span>
                     </div>
                     <div class="response-content">
@@ -426,7 +426,7 @@
 
                     {% if respuesta.feedback %}
                     <div class="evaluation-section evaluation-ai">
-                        <div class="evaluation-header">Evaluación de la IA</div>
+                        <div class="evaluation-header">Evaluación generada con apoyo de Inteligencia Artificial</div>
                         <div class="score-display">
                             <span class="score-number">{{ respuesta.feedback.puntuacion }}</span>
                             <span class="score-total">/10</span>
@@ -459,7 +459,7 @@
                     <div class="question-meta">
                         <div class="meta-item">
                             <span class="meta-label">Tipo:</span>
-                            <span class="question-type-badge">{{ pregunta.tipo|capitalize }}</span>
+                            <span class="question-type-badge">{% if pregunta.tipo == 'codigo' %}Código{% elif pregunta.tipo == 'tecnica' %}Técnica{% elif pregunta.tipo == 'blanda' %}Blanda{% elif pregunta.tipo == 'general' %}General{% endif %}</span>
                         </div>
                     </div>
                     <div class="question-text">{{ pregunta.pregunta }}</div>
@@ -470,7 +470,7 @@
                 {% if respuesta %}
                 <div class="response-section">
                     <div class="response-header">
-                        <span>🎙️</span>
+                        <span></span>
                         <span>Tu respuesta:</span>
                     </div>
                     <div class="response-content">
@@ -479,7 +479,7 @@
 
                     {% if respuesta.evaluacion_llm %}
                     <div class="evaluation-section evaluation-llm">
-                        <div class="evaluation-header">Evaluación de la IA</div>
+                        <div class="evaluation-header">Evaluación generada con apoyo de Inteligencia Artificial</div>
                         <div class="score-display">
                             <span class="score-number">{{ respuesta.evaluacion_llm.puntaje }}</span>
                             <span class="score-total">/10</span>
@@ -509,7 +509,7 @@
 
             <div class="back-home-section">
                 <a href="/" class="back-home-btn">
-                    <span>🏠</span>
+                    <span></span>
                     <span>Volver al inicio</span>
                 </a>
             </div>

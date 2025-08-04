@@ -302,10 +302,7 @@
     {% include "_navbar.html" %}
     <div class="dashboard-interviews-container">
         <div class="dashboard-header">
-            <h1 class="welcome-message">
-                <span>Hola, {{ nombre }}</span>
-            </h1>
-            <h2 class="dashboard-subtitle">Historial de Entrevistas</h2>
+            <h1>Historial de Entrevistas</h1>
         </div>
 
         {% if entrevistas %}
@@ -313,12 +310,12 @@
             <div class="stats-overview">
                 <div class="stat-card">
                     <div class="stat-number">{{ entrevistas|length }}</div>
-                    <div class="stat-label">Total Entrevistas</div>
+                    <div class="stat-label">Total de entrevistas realizadas</div>
                 </div>
                 <a href="/feedback/progreso" style="text-decoration: none;">
                     <div class="stat-card">
                     <div class="stat-number">📊</div>
-                    <div class="stat-label">Progreso</div>
+                    <div class="stat-label">Revisa tu progreso a lo largo del tiempo</div>
                 </div>
                 </a>
             </div>
@@ -327,8 +324,8 @@
             <div class="table-container">
                 <div class="table-header">
                     <h3 class="table-title">
-                        <span>📋</span>
-                        Detalles de Entrevistas
+                        <span></span>
+                        Detalle de entrevistas realizadas
                     </h3>
                 </div>
                 
@@ -336,14 +333,14 @@
                     <thead>
                         <tr>
                             <th>Fecha</th>
-                            <th>Preguntas</th>
-                            <th>Código</th>
-                            <th>Técnicas</th>
-                            <th>Blandas</th>
+                            <th>Total de Preguntas</th>
+                            <th>Problemas de Código</th>
+                            <th>Preguntas de Habilidades Técnicas</th>
+                            <th>Preguntas de Habilidades Blandas</th>
                             <th>Estado</th>
-                            <th>Prom. Código</th>
-                            <th>Prom. Técnica</th>
-                            <th>Prom. Blanda</th>
+                            <th>Promedio de Problemas de Código</th>
+                            <th>Promedio de Preguntas de Habilidades Técnicas</th>
+                            <th>Promedio de Preguntas de Habilidades Blandas</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
@@ -355,7 +352,7 @@
                                 <td><span class="count-badge">{{ entrevista.codigo }}</span></td>
                                 <td><span class="count-badge">{{ entrevista.tecnica }}</span></td>
                                 <td><span class="count-badge">{{ entrevista.blanda }}</span></td>
-                                <td><span class="estado-{{ entrevista.estado | lower }}">{{ entrevista.estado }}</span></td>
+                                <td><span class="estado-{{ entrevista.estado | lower }}">{% if entrevista.estado == "terminada" %}Terminada{% else %}En Progreso{% endif %}</span></td>
                                 <td>
                                     {% if entrevista.promedio_codigo != "N/A" %}
                                         <span class="promedio-score {% if entrevista.promedio_codigo >= 8 %}score-high{% elif entrevista.promedio_codigo >= 6 %}score-medium{% else %}score-low{% endif %}">
@@ -403,7 +400,7 @@
                     <tfoot>
                         <tr class="totals-row">
                             <td class="totals-label">
-                                <strong>📊 TOTALES</strong>
+                               <p style="color: aqua;"> <strong> TOTALES</strong></p>
                             </td>
                             <td>
                                 <span class="count-badge total-badge">{{ totales.total_preguntas }}</span>

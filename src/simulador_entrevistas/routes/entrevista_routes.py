@@ -1,6 +1,8 @@
 import base64
 import json
 import io
+from typing import Optional
+
 from fastapi import APIRouter, Request, Form, Path
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
@@ -21,7 +23,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates/entrevista"))
 
 @router.get("/nueva", response_class=HTMLResponse)
-async def mostrar_formulario_nueva_entrevista(request: Request):
+async def mostrar_formulario_nueva_entrevista(request: Request, error: Optional[str] = None):
     token = request.cookies.get("access_token")
     if not token:
         return RedirectResponse(url="/auth/login")
@@ -39,7 +41,7 @@ async def mostrar_formulario_nueva_entrevista(request: Request):
         usuario_obj_id = usuario_id
     cv = await db["curriculum"].find_one({"usuario_id": usuario_obj_id})
     print(cv)
-    nombre = cv["nombre"] if cv else "Sin nombre"
+    nombre = cv["nombre"] if cv else ""
 
     config = await db["config"].find_one({"_id": "duraciones"})
     if not config:
@@ -48,11 +50,17 @@ async def mostrar_formulario_nueva_entrevista(request: Request):
             "mediana": {"minutos": 40},
             "larga": {"minutos": 60}
         }
+        
+    mensaje = None
+    if error == "opciones_no_permitidas":
+        mensaje = "Las opciones seleccionadas no están permitidas. Por favor, elige 20 minutos y modo normal."
 
     return templates.TemplateResponse("nueva.html", {
         "request": request,
         "config": config,
-        "nombre": nombre
+        "nombre": nombre,
+        "mensaje": mensaje
+       
     })
 
 @router.post("/nueva")
@@ -61,6 +69,16 @@ async def crear_entrevista(
     duracion: str = Form(...),
     modo: str = Form(...)
 ):
+    if duracion != "20" or modo != "mixto":
+        return RedirectResponse(url="/entrevista/nueva?error=opciones_no_permitidas", status_code=303)
+
+    if duracion == "20":
+        duracion = "corta"
+    elif duracion == "40":
+        duracion = "mediana"
+    elif duracion == "60":
+        duracion = "larga"
+
     token = request.cookies.get("access_token")
     payload = decode_token(token)
     if not payload:
@@ -76,7 +94,10 @@ async def crear_entrevista(
 
     config_doc = await db["config"].find_one({"_id": "duraciones"})
     if not config_doc or duracion not in config_doc:
+        print(f"Duración '{duracion}' no encontrada en la configuración de duraciones.")
         return RedirectResponse(url="/entrevista/nueva")
+        
+        
 
     config = config_doc[duracion]
 
@@ -111,6 +132,7 @@ async def crear_entrevista(
 
     resultado = await db["entrevistas"].insert_one(entrevista)
     entrevista_id = str(resultado.inserted_id)
+    print(f"Entrevista creada con ID: {entrevista_id}")
     await generar_preguntas_para_entrevista(db, entrevista_id)
 
     # Redirigir al layout de preguntas
