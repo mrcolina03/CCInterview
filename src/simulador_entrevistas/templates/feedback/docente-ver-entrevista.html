@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalle de Entrevista - ccInterview Docente</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='css/estilos.css') }}">
+    <style>
+        /* Estilos específicos para vista detalle docente */
+        .docente-detail-container {
+            min-height: 100vh;
+            background: var(--bg-primary);
+            padding: var(--space-xl) var(--space-md);
+        }
+
+        .detail-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .detail-header {
+            margin-bottom: var(--space-2xl);
+        }
+
+        .detail-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: var(--space-md);
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: var(--space-lg);
+        }
+
+        .breadcrumb a {
+            color: var(--accent-blue);
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        .overview-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-xl);
+            margin-bottom: var(--space-2xl);
+        }
+
+        .student-profile-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: var(--space-xl);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .student-profile-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-green));
+        }
+
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: var(--space-lg);
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .student-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent-blue);
+            margin-bottom: var(--space-md);
+        }
+
+        .profile-section {
+            margin-bottom: var(--space-lg);
+        }
+
+        .profile-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .section-label {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: var(--space-sm);
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: var(--space-xs);
+        }
+
+        .skill-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-xs);
+        }
+
+        .skill-tag {
+            background: rgba(0, 212, 255, 0.1);
+            color: var(--accent-blue);
+            padding: var(--space-xs) var(--space-sm);
+            border-radius: var(--radius-sm);
+            font-size: 0.8rem;
+            font-weight: 500;
+            border: 1px solid var(--accent-blue);
+        }
+
+        .experience-item {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: var(--space-md);
+            margin-bottom: var(--space-sm);
+        }
+
+        .experience-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .experience-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: var(--space-xs);
+        }
+
+        .experience-position {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+
+        .experience-company {
+            color: var(--accent-blue);
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .experience-duration {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        .experience-description {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            line-height: 1.4;
+            margin-top: var(--space-xs);
+        }
+
+        .stats-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: var(--space-xl);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stats-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent-purple), var(--accent-green));
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--space-lg);
+            margin-bottom: var(--space-lg);
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--accent-purple);
+            margin-bottom: var(--space-xs);
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .overall-score {
+            text-align: center;
+            padding: var(--space-lg);
+            background: var(--bg-secondary);
+            border-radius: var(--radius);
+            margin-top: var(--space-lg);
+        }
+
+        .overall-score-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: var(--space-xs);
+        }
+
+        .score-high {
+            color: var(--success-color);
+        }
+
+        .score-medium {
+            color: var(--warning-color);
+        }
+
+        .score-low {
+            color: var(--error-color);
+        }
+
+        .overall-score-label {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .questions-section {
+            margin-top: var(--space-2xl);
+        }
+
+        .section-tabs {
+            display: flex;
+            gap: var(--space-md);
+            margin-bottom: var(--space-xl);
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .tab-button {
+            background: none;
+            border: none;
+            padding: var(--space-md) var(--space-lg);
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all var(--transition);
+            position: relative;
+        }
+
+        .tab-button.active {
+            color: var(--accent-blue);
+            border-bottom-color: var(--accent-blue);
+        }
+
+        .tab-button:hover {
+            color: var(--text-primary);
+        }
+
+        .tab-count {
+            background: var(--accent-blue);
+            color: white;
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: var(--radius-sm);
+            margin-left: var(--space-xs);
+        }
+
+        .tab-button.active .tab-count {
+            background: white;
+            color: var(--accent-blue);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .question-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: var(--space-xl);
+            margin-bottom: var(--space-xl);
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+            transition: all var(--transition);
+        }
+
+        .question-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+        }
+
+        .question-card.codigo::before {
+            background: var(--accent-blue);
+        }
+
+        .question-card.tecnica::before {
+            background: var(--accent-purple);
+        }
+
+        .question-card.blanda::before {
+            background: var(--accent-green);
+        }
+
+        .question-header {
+            margin-bottom: var(--space-lg);
+            padding-bottom: var(--space-md);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .question-number {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: var(--space-sm);
+        }
+
+        .question-text {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: var(--space-lg);
+            color: var(--text-primary);
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: var(--space-lg);
+        }
+
+        .response-section {
+            margin-top: var(--space-lg);
+        }
+
+        .response-header {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: var(--space-sm);
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .response-content {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: var(--space-lg);
+            margin-bottom: var(--space-md);
+            position: relative;
+        }
+
+        .response-content::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: var(--accent-green);
+            border-radius: var(--radius-sm);
+        }
+
+        .code-response {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            white-space: pre-wrap;
+            overflow-x: auto;
+            color: var(--text-primary);
+            line-height: 1.4;
+        }
+
+        .text-response {
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            line-height: 1.6;
+            white-space: pre-line;
+        }
+
+        .evaluation-section {
+            margin-top: var(--space-lg);
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: var(--space-lg);
+            position: relative;
+        }
+
+        .evaluation-ai {
+            background: rgba(0, 212, 255, 0.05);
+            border-color: var(--accent-blue);
+        }
+
+        .evaluation-llm {
+            background: rgba(0, 255, 136, 0.05);
+            border-color: var(--accent-green);
+        }
+
+        .evaluation-header {
+            font-weight: 600;
+            color: var(--accent-blue);
+            margin-bottom: var(--space-md);
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .evaluation-llm .evaluation-header {
+            color: var(--accent-green);
+        }
+
+        .score-display {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-sm);
+            background: var(--bg-card);
+            padding: var(--space-sm) var(--space-md);
+            border-radius: var(--radius);
+            margin-bottom: var(--space-md);
+        }
+
+        .score-number {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--accent-blue);
+        }
+
+        .evaluation-llm .score-number {
+            color: var(--accent-green);
+        }
+
+        .score-total {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        .evaluation-detail {
+            margin-bottom: var(--space-md);
+        }
+
+        .evaluation-label {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: var(--space-xs);
+            font-size: 0.9rem;
+        }
+
+        .evaluation-text {
+            color: var(--text-secondary);
+            line-height: 1.5;
+            font-size: 0.95rem;
+        }
+
+        .no-response {
+            color: var(--error-color);
+            text-align: center;
+            padding: var(--space-lg);
+            background: rgba(255, 71, 87, 0.1);
+            border: 1px solid var(--error-color);
+            border-radius: var(--radius);
+            font-weight: 500;
+        }
+
+        .back-section {
+            text-align: center;
+            margin-top: var(--space-2xl);
+            padding-top: var(--space-xl);
+            border-top: 1px solid var(--border-color);
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-sm);
+            padding: var(--space-lg) var(--space-xl);
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            color: white;
+            text-decoration: none;
+            border-radius: var(--radius);
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all var(--transition);
+        }
+
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .overview-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .section-tabs {
+                flex-wrap: wrap;
+            }
+
+            .tab-button {
+                font-size: 0.9rem;
+                padding: var(--space-sm) var(--space-md);
+            }
+        }
+    </style>
+</head>
+<body>
+    {% include "_navbar.html" %}
+    <div class="docente-detail-container">
+        <div class="detail-content">
+            <div class="detail-header">
+                <div class="breadcrumb">
+                    <a href="/feedback/docente/dashboard">📊 Dashboard Docente</a>
+                    <span>›</span>
+                    <span>Detalle de Entrevista</span>
+                </div>
+                <h1 class="detail-title">Análisis Detallado de Entrevista</h1>
+            </div>
+
+            <div class="overview-grid">
+                <!-- Perfil del Estudiante -->
+                <div class="student-profile-card">
+                    <h2 class="card-title">
+                        <span>👤</span>
+                        <span>Perfil del Estudiante</span>
+                    </h2>
+                    
+                    <div class="student-name">{{ cv.nombre }}</div>
+                    
+                    <div class="profile-section">
+                        <div class="section-label">💻 Lenguajes de Programación</div>
+                        <div class="skill-tags">
+                            {% if cv.habilidades_tecnicas and cv.habilidades_tecnicas.lenguajes %}
+                                {% for lenguaje in cv.habilidades_tecnicas.lenguajes.split(',') %}
+                                    <span class="skill-tag">{{ lenguaje.strip() }}</span>
+                                {% endfor %}
+                            {% else %}
+                                <span class="skill-tag">No especificado</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="profile-section">
+                        <div class="section-label">🔧 Frameworks</div>
+                        <div class="skill-tags">
+                            {% if cv.habilidades_tecnicas and cv.habilidades_tecnicas.frameworks %}
+                                {% for framework in cv.habilidades_tecnicas.frameworks.split(',') %}
+                                    <span class="skill-tag">{{ framework.strip() }}</span>
+                                {% endfor %}
+                            {% else %}
+                                <span class="skill-tag">No especificado</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {% if cv.experiencia and cv.experiencia|length > 0 %}
+                    <div class="profile-section">
+                        <div class="section-label">💼 Experiencia Profesional</div>
+                        {% for exp in cv.experiencia[:2] %}
+                        <div class="experience-item">
+                            <div class="experience-header">
+                                <div>
+                                    <div class="experience-position">{{ exp.puesto }}</div>
+                                    <div class="experience-company">{{ exp.empresa }}</div>
+                                </div>
+                                <div class="experience-duration">{{ exp.duracion }}</div>
+                            </div>
+                            <div class="experience-description">{{ exp.descripcion[:100] }}{% if exp.descripcion|length > 100 %}...{% endif %}</div>
+                        </div>
+                        {% endfor %}
+                        {% if cv.experiencia|length > 2 %}
+                        <div style="color: var(--text-muted); font-size: 0.85rem; text-align: center; margin-top: var(--space-sm);">
+                            Y {{ cv.experiencia|length - 2 }} experiencia(s) más...
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    {% if cv.certificaciones and cv.certificaciones|length > 0 %}
+                    <div class="profile-section">
+                        <div class="section-label">🏆 Certificaciones</div>
+                        {% for cert in cv.certificaciones[:3] %}
+                        <div style="margin-bottom: var(--space-xs); font-size: 0.9rem;">
+                            <strong>{{ cert.nombre }}</strong> - {{ cert.emisor }}
+                        </div>
+                        {% endfor %}
+                        {% if cv.certificaciones|length > 3 %}
+                        <div style="color: var(--text-muted); font-size: 0.85rem;">
+                            Y {{ cv.certificaciones|length - 3 }} certificación(es) más...
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Estadísticas de la Entrevista -->
+                <div class="stats-card">
+                    <h2 class="card-title">
+                        <span>📊</span>
+                        <span>Estadísticas de la Entrevista</span>
+                    </h2>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-value">{{ estadisticas.total_preguntas }}</div>
+                            <div class="stat-label">Preguntas Totales</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">{{ estadisticas.preguntas_codigo }}</div>
+                            <div class="stat-label">Problemas de Código</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">{{ estadisticas.preguntas_tecnicas }}</div>
+                            <div class="stat-label">Preguntas Técnicas</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">{{ estadisticas.preguntas_blandas }}</div>
+                            <div class="stat-label">Habilidades Blandas</div>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-md); margin-bottom: var(--space-lg);">
+                        <div class="stat-item">
+                            {% if estadisticas.promedio_codigo != "N/A" %}
+                                <div class="stat-value {% if estadisticas.promedio_codigo >= 8 %}score-high{% elif estadisticas.promedio_codigo >= 6 %}score-medium{% else %}score-low{% endif %}">
+                                    {{ estadisticas.promedio_codigo }}
+                                </div>
+                            {% else %}
+                                <div class="stat-value" style="color: var(--text-muted);">-</div>
+                            {% endif %}
+                            <div class="stat-label">Prom. Código</div>
+                        </div>
+                        <div class="stat-item">
+                            {% if estadisticas.promedio_tecnicas != "N/A" %}
+                                <div class="stat-value {% if estadisticas.promedio_tecnicas >= 8 %}score-high{% elif estadisticas.promedio_tecnicas >= 6 %}score-medium{% else %}score-low{% endif %}">
+                                    {{ estadisticas.promedio_tecnicas }}
+                                </div>
+                            {% else %}
+                                <div class="stat-value" style="color: var(--text-muted);">-</div>
+                            {% endif %}
+                            <div class="stat-label">Prom. Técnicas</div>
+                        </div>
+                        <div class="stat-item">
+                            {% if estadisticas.promedio_blandas != "N/A" %}
+                                <div class="stat-value {% if estadisticas.promedio_blandas >= 8 %}score-high{% elif estadisticas.promedio_blandas >= 6 %}score-medium{% else %}score-low{% endif %}">
+                                    {{ estadisticas.promedio_blandas }}
+                                </div>
+                            {% else %}
+                                <div class="stat-value" style="color: var(--text-muted);">-</div>
+                            {% endif %}
+                            <div class="stat-label">Prom. Blandas</div>
+                        </div>
+                    </div>
+
+                    {% if estadisticas.promedio_general != "N/A" %}
+                    <div class="overall-score">
+                        <div class="overall-score-value {% if estadisticas.promedio_general >= 8 %}score-high{% elif estadisticas.promedio_general >= 6 %}score-medium{% else %}score-low{% endif %}">
+                            {{ estadisticas.promedio_general }}
+                        </div>
+                        <div class="overall-score-label">Promedio General</div>
+                    </div>
+                    {% endif %}
+
+                    <div style="margin-top: var(--space-lg); padding-top: var(--space-lg); border-top: 1px solid var(--border-color); display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); font-size: 0.9rem;">
+                        <div>
+                            <strong>Fecha:</strong> {{ estadisticas.fecha }}
+                        </div>
+                        <div>
+                            <strong>Estado:</strong> 
+                            <span class="estado-badge estado-{{ estadisticas.estado }}">
+                                {% if estadisticas.estado == "terminada" %}Terminada{% else %}En Progreso{% endif %}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sección de Preguntas y Respuestas -->
+            <div class="questions-section">
+                <div class="section-tabs">
+                    <button class="tab-button active" onclick="showTab('codigo')">
+                        💻 Problemas de Código
+                        <span class="tab-count">{{ preguntas_codigo|length }}</span>
+                    </button>
+                    <button class="tab-button" onclick="showTab('tecnicas')">
+                        🔧 Preguntas Técnicas
+                        <span class="tab-count">{{ preguntas_tecnicas|length }}</span>
+                    </button>
+                    <button class="tab-button" onclick="showTab('blandas')">
+                        🤝 Habilidades Blandas
+                        <span class="tab-count">{{ preguntas_blandas|length }}</span>
+                    </button>
+                </div>
+
+                <!-- Tab Problemas de Código -->
+                <div id="tab-codigo" class="tab-content active">
+                    {% for pregunta in preguntas_codigo %}
+                    <div class="question-card codigo">
+                        <div class="question-header">
+                            <h3 class="question-number">💻 Problema de Código {{ loop.index }}</h3>
+                            <div class="question-text">{{ pregunta.pregunta }}</div>
+                        </div>
+
+                        {% set respuesta = respuestas_codigo | selectattr("pregunta_id", "equalto", pregunta._id) | first %}
+
+                        {% if respuesta %}
+                        <div class="response-section">
+                            <div class="response-header">
+                                <span>📝</span>
+                                <span>Solución del Estudiante:</span>
+                            </div>
+                            <div class="response-content">
+                                <div class="code-response">{{ respuesta.respuesta }}</div>
+                            </div>
+
+                            {% if respuesta.salida %}
+                            <div class="response-header" style="margin-top: var(--space-md);">
+                                <span>✅</span>
+                                <span>Salida del Programa:</span>
+                            </div>
+                            <div class="response-content" style="background: rgba(0, 255, 136, 0.05); border-left-color: var(--success-color);">
+                                <div class="code-response" style="color: var(--success-color);">{{ respuesta.salida }}</div>
+                            </div>
+                            {% endif %}
+
+                            {% if respuesta.error %}
+                            <div class="response-header" style="margin-top: var(--space-md);">
+                                <span>❌</span>
+                                <span>Error de Ejecución:</span>
+                            </div>
+                            <div class="response-content" style="background: rgba(255, 71, 87, 0.05); border-left-color: var(--error-color);">
+                                <div class="code-response" style="color: var(--error-color);">{{ respuesta.error }}</div>
+                            </div>
+                            {% endif %}
+
+                            {% if respuesta.feedback %}
+                            <div class="evaluation-section evaluation-ai">
+                                <div class="evaluation-header">
+                                    <span>🤖</span>
+                                    <span>Evaluación Automática</span>
+                                </div>
+                                <div class="score-display">
+                                    <span class="score-number">{{ respuesta.feedback.puntuacion }}</span>
+                                    <span class="score-total">/10</span>
+                                </div>
+                                <div class="evaluation-detail">
+                                    <div class="evaluation-label">Justificación:</div>
+                                    <div class="evaluation-text">{{ respuesta.feedback.justificacion }}</div>
+                                </div>
+                                <div class="evaluation-detail">
+                                    <div class="evaluation-label">Recomendaciones:</div>
+                                    <div class="evaluation-text">{{ respuesta.feedback.recomendaciones }}</div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% else %}
+                        <div class="no-response">❌ El estudiante no proporcionó una respuesta para esta pregunta.</div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+
+                    {% if preguntas_codigo|length == 0 %}
+                    <div style="text-align: center; padding: var(--space-2xl); color: var(--text-muted);">
+                        <div style="font-size: 3rem; margin-bottom: var(--space-lg);">💻</div>
+                        <div style="font-size: 1.2rem; margin-bottom: var(--space-sm);">No hay problemas de código</div>
+                        <div style="font-size: 0.9rem;">Esta entrevista no incluyó problemas de programación</div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Tab Preguntas Técnicas -->
+                <div id="tab-tecnicas" class="tab-content">
+                    {% for pregunta in preguntas_tecnicas %}
+                    <div class="question-card tecnica">
+                        <div class="question-header">
+                            <h3 class="question-number">🔧 Pregunta Técnica {{ loop.index }}</h3>
+                            <div class="question-text">{{ pregunta.pregunta }}</div>
+                        </div>
+
+                        {% set respuesta = respuestas_tecnicas | selectattr("pregunta_id", "equalto", pregunta._id) | first %}
+
+                        {% if respuesta %}
+                        <div class="response-section">
+                            <div class="response-header">
+                                <span>🎤</span>
+                                <span>Respuesta del Estudiante:</span>
+                            </div>
+                            <div class="response-content">
+                                <div class="text-response">{{ respuesta.respuesta_texto }}</div>
+                            </div>
+
+                            {% if respuesta.evaluacion_llm %}
+                            <div class="evaluation-section evaluation-llm">
+                                <div class="evaluation-header">
+                                    <span>✨</span>
+                                    <span>Evaluación por IA</span>
+                                </div>
+                                <div class="score-display">
+                                    <span class="score-number">{{ respuesta.evaluacion_llm.puntaje }}</span>
+                                    <span class="score-total">/10</span>
+                                </div>
+                                <div class="evaluation-detail">
+                                    <div class="evaluation-label">Justificación:</div>
+                                    <div class="evaluation-text">{{ respuesta.evaluacion_llm.justificacion }}</div>
+                                </div>
+                                <div class="evaluation-detail">
+                                    <div class="evaluation-label">Sugerencias de Mejora:</div>
+                                    <div class="evaluation-text">{{ respuesta.evaluacion_llm.sugerencias }}</div>
+                                </div>
+                                {% if respuesta.evaluacion_audio %}
+                                <div class="evaluation-detail">
+                                    <div class="evaluation-label">Análisis de Audio:</div>
+                                    <div class="evaluation-text">{{ respuesta.evaluacion_audio }}</div>
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% else %}
+                        <div class="no-response">❌ El estudiante no proporcionó una respuesta para esta pregunta.</div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+
+                    {% if preguntas_tecnicas|length == 0 %}
+                    <div style="text-align: center; padding: var(--space-2xl); color: var(--text-muted);">
+                        <div style="font-size: 3rem; margin-bottom: var(--space-lg);">🔧</div>
+                        <div style="font-size: 1.2rem; margin-bottom: var(--space-sm);">No hay preguntas técnicas</div>
+                        <div style="font-size: 0.9rem;">Esta entrevista no incluyó preguntas técnicas específicas</div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Tab Habilidades Blandas -->
+                <div id="tab-blandas" class="tab-content">
+                    {% for pregunta in preguntas_blandas %}
+                    <div class="question-card blanda">
+                        <div class="question-header">
+                            <h3 class="question-number">🤝 Habilidad Blanda {{ loop.index }}</h3>
+                            <div class="question-text">{{ pregunta.pregunta }}</div>
+                        </div>
+
+                        {% set respuesta = respuestas_blandas | selectattr("pregunta_id", "equalto", pregunta._id) | first %}
+
+                        {% if respuesta %}
+                        <div class="response-section">
+                            <div class="response-header">
+                                <span>🎤</span>
+                                <span>Respuesta del Estudiante:</span>
+                            </div>
+                            <div class="response-content">
+                                <div class="text-response">{{ respuesta.respuesta_texto }}</div>
+                            </div>
+
+                            {% if respuesta.evaluacion_llm %}
+                            <div class="evaluation-section evaluation-llm">
+                                <div class="evaluation-header">
+                                    <span>✨</span>
+                                    <span>Evaluación por IA</span>
+                                </div>
+                                <div class="score-display">
+                                    <span class="score-number">{{ respuesta.evaluacion_llm.puntaje }}</span>
+                                    <span class="score-total">/10</span>
+                                </div>
+                                <div class="evaluation-detail">
+                                    <div class="evaluation-label">Justificación:</div>
+                                    <div class="evaluation-text">{{ respuesta.evaluacion_llm.justificacion }}</div>
+                                </div>
+                                <div class="evaluation-detail">
+                                    <div class="evaluation-label">Sugerencias de Mejora:</div>
+                                    <div class="evaluation-text">{{ respuesta.evaluacion_llm.sugerencias }}</div>
+                                </div>
+                                {% if respuesta.evaluacion_audio %}
+                                <div class="evaluation-detail">
+                                    <div class="evaluation-label">Análisis de Audio:</div>
+                                    <div class="evaluation-text">{{ respuesta.evaluacion_audio }}</div>
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% else %}
+                        <div class="no-response">❌ El estudiante no proporcionó una respuesta para esta pregunta.</div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+
+                    {% if preguntas_blandas|length == 0 %}
+                    <div style="text-align: center; padding: var(--space-2xl); color: var(--text-muted);">
+                        <div style="font-size: 3rem; margin-bottom: var(--space-lg);">🤝</div>
+                        <div style="font-size: 1.2rem; margin-bottom: var(--space-sm);">No hay preguntas de habilidades blandas</div>
+                        <div style="font-size: 0.9rem;">Esta entrevista no incluyó evaluación de habilidades interpersonales</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="back-section">
+                <a href="/feedback/docente/dashboard" class="back-btn">
+                    <span>←</span>
+                    <span>Volver al Dashboard</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showTab(tabName) {
+            // Ocultar todos los contenidos de pestañas
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(content => content.classList.remove('active'));
+
+            // Desactivar todos los botones de pestañas
+            const tabButtons = document.querySelectorAll('.tab-button');
+            tabButtons.forEach(button => button.classList.remove('active'));
+
+            // Mostrar el contenido de la pestaña seleccionada
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+
+            // Activar el botón de la pestaña seleccionada
+            event.target.classList.add('active');
+        }
+
+        // Función para mejorar la visualización de código
+        document.addEventListener('DOMContentLoaded', function() {
+            const codeBlocks = document.querySelectorAll('.code-response');
+            codeBlocks.forEach(block => {
+                // Añadir números de línea si el código es largo
+                const lines = block.textContent.split('\n');
+                if (lines.length > 10) {
+                    block.style.position = 'relative';
+                    block.style.paddingLeft = '3em';
+                    
+                    const lineNumbers = document.createElement('div');
+                    lineNumbers.style.position = 'absolute';
+                    lineNumbers.style.left = '0';
+                    lineNumbers.style.top = '0';
+                    lineNumbers.style.color = 'var(--text-muted)';
+                    lineNumbers.style.fontSize = '0.8em';
+                    lineNumbers.style.fontFamily = 'monospace';
+                    lineNumbers.style.lineHeight = '1.4';
+                    lineNumbers.style.paddingTop = '0';
+                    lineNumbers.style.userSelect = 'none';
+                    
+                    let numberText = '';
+                    for (let i = 1; i <= lines.length; i++) {
+                        numberText += i + '\n';
+                    }
+                    lineNumbers.textContent = numberText;
+                    
+                    block.parentNode.insertBefore(lineNumbers, block);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Docente - ccInterview</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='css/estilos.css') }}">
+    <style>
+        /* Estilos específicos para dashboard docente */
+        .docente-dashboard-container {
+            min-height: 100vh;
+            background: var(--bg-primary);
+            padding: var(--space-xl) var(--space-md);
+        }
+
+        .docente-header {
+            max-width: 1400px;
+            margin: 0 auto;
+            margin-bottom: var(--space-2xl);
+        }
+
+        .docente-title {
+            font-size: 2.8rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: var(--space-sm);
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .docente-subtitle {
+            font-size: 1.3rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: var(--space-lg);
+        }
+
+        .stats-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: var(--space-lg);
+            margin-bottom: var(--space-xl);
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: var(--space-xl);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            transition: all var(--transition);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple), var(--accent-green));
+        }
+
+        .stat-card:hover {
+            transform: translateY(-6px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: var(--space-md);
+        }
+
+        .stat-number {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--accent-blue);
+            margin-bottom: var(--space-xs);
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            font-weight: 500;
+            line-height: 1.3;
+        }
+
+        .filters-section {
+            max-width: 1400px;
+            margin: 0 auto var(--space-xl);
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
+        }
+
+        .filters-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: var(--space-md);
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--space-md);
+            align-items: end;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-xs);
+        }
+
+        .filter-label {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .filter-input, .filter-select {
+            padding: var(--space-sm);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+
+        .filter-btn {
+            padding: var(--space-sm) var(--space-md);
+            background: var(--accent-blue);
+            color: white;
+            border: none;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-weight: 500;
+            transition: all var(--transition);
+        }
+
+        .filter-btn:hover {
+            background: var(--accent-purple);
+            transform: translateY(-1px);
+        }
+
+        .table-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            position: relative;
+        }
+
+        .table-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple), var(--accent-green));
+        }
+
+        .table-header {
+            padding: var(--space-lg) var(--space-xl);
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .table-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .entrevistas-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        .entrevistas-table th {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-weight: 600;
+            padding: var(--space-md) var(--space-sm);
+            text-align: left;
+            border-bottom: 2px solid var(--border-color);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        .entrevistas-table td {
+            padding: var(--space-md) var(--space-sm);
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            vertical-align: middle;
+        }
+
+        .entrevistas-table tbody tr {
+            transition: all var(--transition);
+        }
+
+        .entrevistas-table tbody tr:hover {
+            background: var(--bg-secondary);
+            transform: scale(1.005);
+        }
+
+        .student-info {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-xs);
+        }
+
+        .student-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+        }
+
+        .student-id {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-family: monospace;
+        }
+
+        .score-display {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-xs);
+        }
+
+        .score-badge {
+            font-weight: 600;
+            padding: var(--space-xs) var(--space-sm);
+            border-radius: var(--radius-sm);
+            min-width: 45px;
+            text-align: center;
+            font-size: 0.85rem;
+        }
+
+        .score-high {
+            background: rgba(0, 255, 136, 0.2);
+            color: var(--success-color);
+            border: 1px solid var(--success-color);
+        }
+
+        .score-medium {
+            background: rgba(255, 165, 2, 0.2);
+            color: var(--warning-color);
+            border: 1px solid var(--warning-color);
+        }
+
+        .score-low {
+            background: rgba(255, 71, 87, 0.2);
+            color: var(--error-color);
+            border: 1px solid var(--error-color);
+        }
+
+        .score-na {
+            background: rgba(128, 128, 128, 0.2);
+            color: var(--text-muted);
+            border: 1px solid var(--text-muted);
+        }
+
+        .estado-badge {
+            padding: var(--space-xs) var(--space-sm);
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-xs);
+        }
+
+        .estado-terminada {
+            background: rgba(0, 255, 136, 0.15);
+            color: var(--success-color);
+            border: 1px solid var(--success-color);
+        }
+
+        .estado-terminada::before {
+            content: '✓';
+            font-weight: bold;
+        }
+
+        .estado-en_progreso {
+            background: rgba(255, 165, 2, 0.15);
+            color: var(--warning-color);
+            border: 1px solid var(--warning-color);
+        }
+
+        .estado-en_progreso::before {
+            content: '⏳';
+        }
+
+        .count-badge {
+            background: var(--accent-blue);
+            color: white;
+            padding: var(--space-xs) var(--space-sm);
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: 0.8rem;
+            min-width: 35px;
+            text-align: center;
+            display: inline-block;
+        }
+
+        .action-btn {
+            padding: var(--space-xs) var(--space-md);
+            border-radius: var(--radius);
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-xs);
+        }
+
+        .btn-view {
+            background: var(--accent-green);
+            color: white;
+            border: 1px solid var(--accent-green);
+        }
+
+        .btn-view:hover {
+            background: transparent;
+            color: var(--accent-green);
+            transform: translateY(-1px);
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .entrevistas-table {
+                font-size: 0.8rem;
+            }
+            
+            .entrevistas-table th,
+            .entrevistas-table td {
+                padding: var(--space-sm) var(--space-xs);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .docente-dashboard-container {
+                padding: var(--space-lg) var(--space-sm);
+            }
+
+            .docente-title {
+                font-size: 2.2rem;
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .stats-overview {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .table-container {
+                overflow-x: auto;
+            }
+
+            .entrevistas-table {
+                min-width: 1000px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-overview {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    {% include "_navbar.html" %}
+    <div class="docente-dashboard-container">
+        <div class="docente-header">
+            <h1 class="docente-title">
+                <span>👨‍🏫</span>
+                <span>Panel de Control Docente</span>
+            </h1>
+            <p class="docente-subtitle">Monitoreo y evaluación de entrevistas técnicas de estudiantes</p>
+        </div>
+
+        <!-- Estadísticas generales -->
+        <div class="stats-overview">
+            <div class="stat-card">
+                <div class="stat-icon">📊</div>
+                <div class="stat-number">{{ totales.total_entrevistas }}</div>
+                <div class="stat-label">Entrevistas Totales</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">✅</div>
+                <div class="stat-number">{{ totales.entrevistas_terminadas }}</div>
+                <div class="stat-label">Entrevistas Completadas</div>
+            </div>
+        </div>
+
+        <!-- Filtros -->
+        <div class="filters-section">
+            <h3 class="filters-title">
+                <span>🔍</span>
+                <span>Filtros de Búsqueda</span>
+            </h3>
+            <div class="filters-grid">
+                <div class="filter-group">
+                    <label class="filter-label">Buscar estudiante</label>
+                    <input type="text" class="filter-input" id="buscar-estudiante" placeholder="Nombre del estudiante...">
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Estado</label>
+                    <select class="filter-select" id="filtro-estado">
+                        <option value="">Todos los estados</option>
+                        <option value="terminada">Terminadas</option>
+                        <option value="en_progreso">En progreso</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Promedio mínimo</label>
+                    <select class="filter-select" id="filtro-promedio">
+                        <option value="">Todos los promedios</option>
+                        <option value="8">8.0 o superior</option>
+                        <option value="7">7.0 o superior</option>
+                        <option value="6">6.0 o superior</option>
+                        <option value="5">5.0 o superior</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <button class="filter-btn" onclick="limpiarFiltros()">Limpiar Filtros</button>
+                </div>
+            </div>
+        </div>
+
+        {% if entrevistas %}
+        <!-- Tabla de entrevistas -->
+        <div class="table-container">
+            <div class="table-header">
+                <h3 class="table-title">
+                    <span>📋</span>
+                    <span>Registro Completo de Entrevistas</span>
+                </h3>
+            </div>
+            
+            <table class="entrevistas-table">
+                <thead>
+                    <tr>
+                        <th>Estudiante</th>
+                        <th>Fecha</th>
+                        <th>Estado</th>
+                        <th>Total Preguntas</th>
+                        <th>Código</th>
+                        <th>Técnicas</th>
+                        <th>Blandas</th>
+                        <th>Prom. Código</th>
+                        <th>Prom. Técnicas</th>
+                        <th>Prom. Blandas</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-entrevistas">
+                    {% for entrevista in entrevistas %}
+                    <tr data-estudiante="{{ entrevista.nombre_estudiante|lower }}" 
+                        data-estado="{{ entrevista.estado }}" 
+                        data-promedio="{{ entrevista.promedio_general if entrevista.promedio_general != 'N/A' else '0' }}">
+                        <td>
+                            <div class="student-info">
+                                <div class="student-name">{{ entrevista.nombre_estudiante }}</div>
+                            </div>
+                        </td>
+                        <td>{{ entrevista.fecha }}</td>
+                        <td>
+                            <span class="estado-badge estado-{{ entrevista.estado }}">
+                                {% if entrevista.estado == "terminada" %}Terminada{% else %}En Progreso{% endif %}
+                            </span>
+                        </td>
+                        <td><span class="count-badge">{{ entrevista.total }}</span></td>
+                        <td><span class="count-badge">{{ entrevista.codigo }}</span></td>
+                        <td><span class="count-badge">{{ entrevista.tecnica }}</span></td>
+                        <td><span class="count-badge">{{ entrevista.blanda }}</span></td>
+                        <td>
+                            {% if entrevista.promedio_codigo != "N/A" %}
+                                <span class="score-badge {% if entrevista.promedio_codigo >= 8 %}score-high{% elif entrevista.promedio_codigo >= 6 %}score-medium{% else %}score-low{% endif %}">
+                                    {{ entrevista.promedio_codigo }}
+                                </span>
+                            {% else %}
+                                <span class="score-badge score-na">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if entrevista.promedio_tecnica != "N/A" %}
+                                <span class="score-badge {% if entrevista.promedio_tecnica >= 8 %}score-high{% elif entrevista.promedio_tecnica >= 6 %}score-medium{% else %}score-low{% endif %}">
+                                    {{ entrevista.promedio_tecnica }}
+                                </span>
+                            {% else %}
+                                <span class="score-badge score-na">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if entrevista.promedio_blanda != "N/A" %}
+                                <span class="score-badge {% if entrevista.promedio_blanda >= 8 %}score-high{% elif entrevista.promedio_blanda >= 6 %}score-medium{% else %}score-low{% endif %}">
+                                    {{ entrevista.promedio_blanda }}
+                                </span>
+                            {% else %}
+                                <span class="score-badge score-na">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="/feedback/docente/ver-entrevista/{{ entrevista._id }}" class="action-btn btn-view">
+                                <span>Ver Detalle</span>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <!-- Estado vacío -->
+        <div class="table-container">
+            <div class="empty-state">
+                <div class="empty-state-icon">📚</div>
+                <div class="empty-state-message">No hay entrevistas registradas en el sistema</div>
+                <div class="empty-state-submessage">Las entrevistas aparecerán aquí cuando los estudiantes comiencen a usar la plataforma</div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        // Funcionalidad de filtros
+        document.addEventListener('DOMContentLoaded', function() {
+            const buscarInput = document.getElementById('buscar-estudiante');
+            const filtroEstado = document.getElementById('filtro-estado');
+            const filtroPromedio = document.getElementById('filtro-promedio');
+            const tablaBody = document.getElementById('tabla-entrevistas');
+
+            function aplicarFiltros() {
+                const textoBusqueda = buscarInput.value.toLowerCase();
+                const estadoFiltro = filtroEstado.value;
+                const promedioMinimo = parseFloat(filtroPromedio.value) || 0;
+
+                const filas = tablaBody.querySelectorAll('tr');
+                
+                filas.forEach(fila => {
+                    const estudiante = fila.dataset.estudiante || '';
+                    const estado = fila.dataset.estado || '';
+                    const promedio = parseFloat(fila.dataset.promedio) || 0;
+
+                    const cumpleTexto = estudiante.includes(textoBusqueda);
+                    const cumpleEstado = !estadoFiltro || estado === estadoFiltro;
+                    const cumplePromedio = promedio >= promedioMinimo;
+
+                    if (cumpleTexto && cumpleEstado && cumplePromedio) {
+                        fila.style.display = '';
+                    } else {
+                        fila.style.display = 'none';
+                    }
+                });
+            }
+
+            buscarInput.addEventListener('input', aplicarFiltros);
+            filtroEstado.addEventListener('change', aplicarFiltros);
+            filtroPromedio.addEventListener('change', aplicarFiltros);
+        });
+
+        function limpiarFiltros() {
+            document.getElementById('buscar-estudiante').value = '';
+            document.getElementById('filtro-estado').value = '';
+            document.getElementById('filtro-promedio').value = '';
+            
+            const filas = document.getElementById('tabla-entrevistas').querySelectorAll('tr');
+            filas.forEach(fila => fila.style.display = '');
+        }
+    </script>
+</body>
+</html>
