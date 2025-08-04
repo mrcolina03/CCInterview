@@ -25,7 +25,8 @@ async def transcribir_audio(audio_bytes: bytes) -> str:
                 file=f,
                 language="es"  # Especificamos español para mejor precisión
             )
-        
+        if(transcription.text == "Subtítulos realizados por la comunidad de Amara.org"):
+            transcription.text = "No respondio"
         return transcription.text
         
     except Exception as e:
